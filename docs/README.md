@@ -9,7 +9,7 @@ Only chapters that already exist are linked.
 | Chapter | Primary environment | Outcome |
 | --- | --- | --- |
 | [00. Post-installation profile](00-post-installation-profile.md) | Reference | Fix the starting state, canonical decisions, exclusions, and repository boundaries. |
-| 01. Handoff audit | TTY | Confirm the runbook result, boot path, Secure Boot, mounts, swap, network, time, free space, and recovery access. |
+| [01. Handoff audit](01-handoff-audit.md) | TTY | Confirm the runbook result, boot path, Secure Boot, mounts, swap, network, time, free space, and recovery access. |
 | 02. Package and maintenance baseline | TTY | Perform a complete upgrade; establish news, mirrors, cache, logs, Git and SSH client usage, documentation, and AUR policies. |
 | 03. Storage and memory | TTY | Configure LUKS discard propagation, periodic TRIM, zram, disk-swap fallback, and post-change boot verification. |
 | 04. Security and network baseline | TTY | Configure firewalld, inspect listening services, preserve local recovery, and document the initial hardening boundary. |
