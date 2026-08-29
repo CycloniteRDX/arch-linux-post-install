@@ -13,7 +13,7 @@ Only chapters that already exist are linked.
 | [02. Package and maintenance baseline](02-package-and-maintenance.md) | TTY | Perform a complete upgrade; establish news, mirrors, cache, logs, Git and SSH client usage, documentation, and AUR policies. |
 | [03. Storage and memory](03-storage-and-memory.md) | TTY | Configure LUKS discard propagation, periodic TRIM, zram, disk-swap fallback, and post-change boot verification. |
 | [04. Security and network baseline](04-security-and-network.md) | TTY | Configure firewalld, inspect listening services, preserve local recovery, and document the initial hardening boundary. |
-| 05. Minimal graphical bootstrap | TTY to Niri | Install AMD graphics, Niri, Kitty, portals, polkit, PipeWire, and XWayland compatibility; deploy only the minimal reviewed Niri bootstrap from `niri-dotfiles`; start Niri manually. |
+| [05. Minimal graphical bootstrap](05-minimal-graphical-bootstrap.md) | TTY to Niri | Install AMD graphics, Niri, Kitty, portals, polkit, PipeWire, and XWayland compatibility; deploy only the minimal reviewed Niri bootstrap from `niri-dotfiles`; start Niri manually. |
 | 06. ThinkPad hardware and power | TTY or Kitty | Configure firmware updates, suspend and lid behavior, battery policy, thermals, hardware monitoring, function keys, touchpad, and TrackPoint. |
 | 07. Core workstation services | Kitty | Configure audio, Bluetooth, removable media, secrets, optional printing, and desktop service integration. |
 | 08. User environment | Kitty | Create XDG directories and install fonts, shell and console tools, archive support, clipboard tools, and common utilities. |
