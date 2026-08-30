@@ -10,9 +10,9 @@ secure, maintainable, and complete Niri-based daily-driver workstation.
 
 ## Project status
 
-Implementation in progress. The target profile, complete roadmap, and runbook
-handoff audit are defined. The remaining chapters still need to be written,
-reviewed, and tested on the target ThinkPads.
+The complete chapters 00-14 are written and reviewed as one reproducible
+TTY-to-daily-driver path. The procedure still needs to be executed and recorded
+on each target ThinkPad before it can be considered hardware-validated.
 
 ## Starting point
 
