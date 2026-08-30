@@ -19,7 +19,7 @@ Only chapters that already exist are linked.
 | [08. User environment](08-user-environment.md) | Kitty | Create XDG directories and install fonts, shell and console tools, archive support, clipboard tools, and common utilities. |
 | [09. Daily applications](09-daily-applications.md) | Niri and Kitty | Install and verify the browser, file manager, PDF reader, text editor, media applications, image tools, calendar, and development utilities. |
 | [10. Desktop components](10-desktop-components.md) | Niri | Integrate Waybar, Fuzzel, Mako, swaybg, Niri screenshots, hardware controls, and the logout interface. |
-| 11. Login, lock, and idle lifecycle | TTY and Niri | Add locking and idle handling, test suspend interactions, then enable greetd only after manual sessions are reliable. |
+| [11. Login, lock, and idle lifecycle](11-login-lock-and-idle.md) | TTY and Niri | Add swaylock and swayidle, test suspend protection, then enable greetd with tuigreet only after manual sessions are reliable. |
 | 12. Backup and recovery | TTY or Kitty | Back up Secure Boot and LUKS recovery material, define user-data backup policy, and rehearse ISO/chroot recovery. |
 | 13. Full dotfiles handoff | Niri | Replace the chapter 05 bootstrap with the complete reviewed `niri-dotfiles` configuration without copying secrets or generated machine state. |
 | 14. Daily-driver verification | TTY and Niri | Test boot, updates, shutdown, suspend, networking, audio, Bluetooth, media, external displays, portals, locking, recovery, and backups. |
