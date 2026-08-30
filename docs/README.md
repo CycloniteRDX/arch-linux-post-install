@@ -17,7 +17,7 @@ Only chapters that already exist are linked.
 | [06. ThinkPad hardware and power](06-thinkpad-hardware-and-power.md) | TTY or Kitty | Configure firmware updates, TLP, battery thresholds, suspend and lid behavior; verify thermals, function keys, touchpad, and TrackPoint without aggressive hardware tuning. |
 | [07. Core workstation services](07-core-workstation-services.md) | Kitty | Configure audio, Bluetooth, removable media, secrets, optional printing, and desktop service integration. |
 | [08. User environment](08-user-environment.md) | Kitty | Create XDG directories and install fonts, shell and console tools, archive support, clipboard tools, and common utilities. |
-| 09. Daily applications | Niri and Kitty | Install and verify the browser, file manager, PDF reader, text editor, media applications, image tools, and development utilities. |
+| [09. Daily applications](09-daily-applications.md) | Niri and Kitty | Install and verify the browser, file manager, PDF and image viewers, text editor, media and office applications, development utilities, and tracked default associations. |
 | 10. Desktop components | Niri | Select and integrate the launcher, status UI, notifications, screenshots, wallpaper, themes, and logout interface. |
 | 11. Login, lock, and idle lifecycle | TTY and Niri | Add locking and idle handling, test suspend interactions, then enable greetd only after manual sessions are reliable. |
 | 12. Backup and recovery | TTY or Kitty | Back up Secure Boot and LUKS recovery material, define user-data backup policy, and rehearse ISO/chroot recovery. |
