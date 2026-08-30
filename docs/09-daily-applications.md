@@ -15,17 +15,19 @@ This chapter:
   Micro and Vim for terminal work;
 - installs Celluloid for audio and video playback;
 - installs File Roller and video-thumbnail support for Nautilus;
-- installs GNOME Calculator and the LibreOffice maintenance branch;
+- installs GNOME Calculator, GNOME Calendar, and the LibreOffice maintenance
+  branch;
 - installs English and Spanish spell-checking dictionaries;
 - adds Code - OSS, Vim, and GitHub CLI as the initial development tools;
 - deploys a reviewed `mimeapps.list` from `niri-dotfiles`;
-- verifies the applications without adding a launcher, theme, or background
-  service.
+- verifies the applications without adding a launcher, theme, online account,
+  or system daemon.
 
 It does not install an email client, cloud client, password-manager UI, AUR
 helper, Microsoft Visual Studio Code build, full programming-language
-toolchain, game platform, image editor, or media-library manager. Those remain
-conditional choices rather than silent additions to the workstation.
+toolchain, game platform, image editor, or media-library manager. Calendar
+account synchronization is also deferred. Those remain conditional choices
+rather than silent additions to the workstation.
 
 ## Prerequisites
 
@@ -55,6 +57,7 @@ tests in this chapter run inside Kitty under Niri, not from a bare TTY.
 | Video thumbnails | ffmpegthumbnailer | Supplies previews for common local video files in the file manager. |
 | Office suite | LibreOffice Still | Maintenance branch selected for a reliability-first daily driver. |
 | Calculator | GNOME Calculator | Complete desktop calculator without a larger desktop-shell dependency. |
+| Calendar | GNOME Calendar | Local calendar that fits the GTK stack; remote-account synchronization remains unconfigured. |
 | Development editor | Code - OSS | Official-repository open-source VS Code build. |
 | Terminal editors | Micro and Vim | Micro remains the convenient editor; Vim is present for the later learning guide. |
 | GitHub client | GitHub CLI | Complements the existing Git and OpenSSH clients without enabling a daemon. |
@@ -68,7 +71,7 @@ integration layers without making this workstation more complete.
 Check whether an earlier test already installed an overlapping application:
 
 ```bash
-pacman -Q firefox chromium nautilus thunar dolphin papers evince loupe eog gnome-text-editor gedit celluloid vlc file-roller libreoffice-still libreoffice-fresh code vim github-cli 2>&1
+pacman -Q firefox chromium nautilus thunar dolphin papers evince loupe eog gnome-text-editor gedit celluloid vlc file-roller gnome-calendar libreoffice-still libreoffice-fresh code vim github-cli 2>&1
 ```
 
 On the clean canonical path, most or all entries should be absent. A package
@@ -113,6 +116,7 @@ sudo pacman -Syu \
     file-roller \
     ffmpegthumbnailer \
     gnome-calculator \
+    gnome-calendar \
     libreoffice-still \
     hunspell-en_us \
     hunspell-es_es \
@@ -122,9 +126,10 @@ sudo pacman -Syu \
 ```
 
 Read the complete transaction before accepting it. Nautilus deliberately
-pulls the GNOME search and metadata stack; Celluloid pulls `mpv`; and
-LibreOffice is the largest application in this chapter. These are known parts
-of the selected functions, not reasons to accept unrelated optional packages.
+pulls the GNOME search and metadata stack; Celluloid pulls `mpv`; GNOME
+Calendar pulls Evolution Data Server; and LibreOffice is the largest
+application in this chapter. These are known parts of the selected functions,
+not reasons to accept unrelated optional packages.
 
 The dictionaries provide spelling data for US English and Spanish from Spain.
 They do not change `LANG`, the physical keyboard layout, Firefox's interface
@@ -205,7 +210,7 @@ chapter 02 AUR policy still applies.
 Confirm that every canonical command resolves:
 
 ```bash
-command -v firefox nautilus papers loupe gnome-text-editor celluloid file-roller ffmpegthumbnailer gnome-calculator libreoffice code vim gh
+command -v firefox nautilus papers loupe gnome-text-editor celluloid file-roller ffmpegthumbnailer gnome-calculator gnome-calendar libreoffice code vim gh
 ```
 
 Every name must print one executable path. Confirm that the desktop files used
@@ -220,6 +225,7 @@ ls -l \
     /usr/share/applications/org.gnome.TextEditor.desktop \
     /usr/share/applications/io.github.celluloid_player.Celluloid.desktop \
     /usr/share/applications/org.gnome.FileRoller.desktop \
+    /usr/share/applications/org.gnome.Calendar.desktop \
     /usr/share/applications/libreoffice-writer.desktop \
     /usr/share/applications/libreoffice-calc.desktop \
     /usr/share/applications/libreoffice-impress.desktop \
@@ -242,6 +248,7 @@ pacman -Q \
     file-roller \
     ffmpegthumbnailer \
     gnome-calculator \
+    gnome-calendar \
     libreoffice-still \
     hunspell-en_us \
     hunspell-es_es \
@@ -320,6 +327,7 @@ xdg-mime query default image/jpeg
 xdg-mime query default text/plain
 xdg-mime query default video/mp4
 xdg-mime query default application/zip
+xdg-mime query default text/calendar
 xdg-mime query default application/vnd.oasis.opendocument.text
 ```
 
@@ -333,6 +341,7 @@ org.gnome.Loupe.desktop
 org.gnome.TextEditor.desktop
 io.github.celluloid_player.Celluloid.desktop
 org.gnome.FileRoller.desktop
+org.gnome.Calendar.desktop
 libreoffice-writer.desktop
 ```
 
@@ -343,6 +352,7 @@ gio mime inode/directory
 gio mime application/pdf
 gio mime image/jpeg
 gio mime video/mp4
+gio mime text/calendar
 ```
 
 Each result must identify the same default application. If a query is empty,
@@ -379,6 +389,7 @@ gnome-text-editor
 celluloid
 file-roller
 gnome-calculator
+gnome-calendar
 libreoffice --writer
 code
 ```
@@ -389,6 +400,8 @@ Use representative, non-sensitive local files to test the viewers:
 - open JPEG, PNG, and WebP images in Loupe;
 - play one local audio file and one local video file in Celluloid;
 - open a ZIP archive in File Roller and inspect it before extracting;
+- create one disposable local event in GNOME Calendar, close the application,
+  reopen it, and confirm that the event remains;
 - create a disposable Writer document, close it, and reopen it;
 - open a small existing Git repository in Code - OSS without installing an
   extension bundle yet.
@@ -413,6 +426,44 @@ If the optional printer path from chapter 07 was skipped, LibreOffice may list
 only file or PDF output. Do not enable CUPS merely to satisfy a print-dialog
 test when no printer is required.
 
+## Understand the calendar backend
+
+GNOME Calendar stores and retrieves calendar data through Evolution Data
+Server. The dependency provides per-user source-registry, calendar-factory,
+and alarm-notification services. They are activation-based user services; do
+not enable them as system services and do not add them to the Niri
+configuration manually.
+
+After opening GNOME Calendar, inspect the installed user units:
+
+```bash
+systemctl --user list-unit-files 'evolution-*' --no-pager
+systemctl --user status evolution-source-registry.service evolution-calendar-factory.service --no-pager
+```
+
+The factory units are expected to be static and may be active after the
+application requests them. Static does not mean broken: D-Bus activates them
+when a client needs them.
+
+Evolution Data Server also installs this standard XDG autostart entry:
+
+```bash
+ls -l /etc/xdg/autostart/org.gnome.Evolution-alarm-notify.desktop
+systemctl --user status evolution-alarm-notify.service --no-pager
+```
+
+The alarm service may not start until the next Niri login because the package
+was installed after the current session's autostart phase. Do not enable it
+manually merely to make the status active. Chapter 10 will install the
+notification daemon and then test a short disposable reminder end to end.
+
+This chapter creates only a local calendar. Do not install GNOME Control
+Center solely for its online-account panel, enter Google credentials, or add a
+CalDAV URL yet. Remote synchronization changes the credential, network,
+conflict-resolution, and backup model and will be documented separately.
+Calendar databases, caches, account sources, and secrets are generated user
+state and must not be added to `niri-dotfiles`.
+
 ## Verify the completed checkpoint
 
 Confirm that no system service was enabled by this chapter and no unit failed:
@@ -425,8 +476,9 @@ sudo ss -lntup
 
 The application packages require no new inbound firewall rule. Firefox, Code,
 and other clients make outbound connections while in use; that is different
-from enabling a listening server. Investigate any new listener rather than
-opening a port for it.
+from enabling a listening server. The local calendar backend uses per-user
+D-Bus and does not require a listening network port. Investigate any new
+listener rather than opening a port for it.
 
 Confirm that remote SSH login remains disabled:
 
@@ -456,7 +508,7 @@ Install these only after a real requirement is identified:
 | Requirement | Candidate | Why it is not canonical yet |
 | --- | --- | --- |
 | Raster image editing | GIMP | Loupe already covers viewing; an editor adds a different workflow and configuration surface. |
-| Email and calendar | Thunderbird | No account or local-mail policy has been selected. |
+| Email client | Thunderbird | No account or local-mail policy has been selected. |
 | Dedicated music library | A maintained music player | Celluloid handles local playback; library indexing and metadata policy remain undecided. |
 | Microsoft-branded VS Code | Upstream or AUR package | It leaves the official-repository-only baseline and changes telemetry, Marketplace, and update decisions. |
 | Proprietary media codecs or DRM extras | Application-specific component | Install only for a demonstrated format or service requirement. |
@@ -512,6 +564,10 @@ in the same reviewed change.
 - [ ] Celluloid plays local audio and video through PipeWire.
 - [ ] File Roller opens ZIP and 7-Zip archives and integrates with Nautilus.
 - [ ] LibreOffice Still opens Writer, Calc, and Impress documents.
+- [ ] GNOME Calendar preserves a disposable local event after restarting.
+- [ ] Evolution Data Server units are left activation-based and were not
+      manually enabled as system services.
+- [ ] No Google, CalDAV, or other online calendar account has been configured.
 - [ ] US English and Spanish spell checking are available.
 - [ ] GNOME Text Editor is the ordinary graphical text-file default.
 - [ ] Micro and unconfigured Vim remain available in Kitty.
@@ -541,6 +597,8 @@ in the same reviewed change.
 - [Arch packages: Loupe](https://archlinux.org/packages/extra/x86_64/loupe/)
 - [Arch packages: Celluloid](https://archlinux.org/packages/extra/x86_64/celluloid/)
 - [Arch packages: File Roller](https://archlinux.org/packages/extra/x86_64/file-roller/)
+- [Arch packages: GNOME Calendar](https://archlinux.org/packages/extra/x86_64/gnome-calendar/)
+- [Arch packages: Evolution Data Server](https://archlinux.org/packages/extra/x86_64/evolution-data-server/)
 - [Arch packages: LibreOffice Still](https://archlinux.org/packages/extra/x86_64/libreoffice-still/)
 - [Arch packages: Code - OSS](https://archlinux.org/packages/extra/x86_64/code/)
 - [Arch packages: GitHub CLI](https://archlinux.org/packages/extra/x86_64/github-cli/)
