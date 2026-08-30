@@ -22,7 +22,7 @@ Only chapters that already exist are linked.
 | [11. Login, lock, and idle lifecycle](11-login-lock-and-idle.md) | TTY and Niri | Add swaylock and swayidle, test suspend protection, then enable greetd with tuigreet only after manual sessions are reliable. |
 | [12. Backup and recovery](12-backup-and-recovery.md) | TTY, Kitty, and Arch ISO | Back up LUKS and Secure Boot material, create and test an encrypted Restic snapshot, and rehearse read-only ISO/chroot recovery. |
 | [13. Full dotfiles handoff](13-full-dotfiles-handoff.md) | Niri | Deploy the portable daily-driver Niri and Kitty configuration, verify all bindings, and prove clean GNU Stow reconstruction without secrets or generated state. |
-| 14. Daily-driver verification | TTY and Niri | Test boot, updates, shutdown, suspend, networking, audio, Bluetooth, media, external displays, portals, locking, recovery, and backups. |
+| [14. Daily-driver verification](14-daily-driver-verification.md) | TTY, Niri, and controlled reboots | Verify the complete trust, storage, update, network, hardware, desktop, portal, backup, recovery, and observation lifecycle before classifying the workstation. |
 
 ## Why Niri is not the first command
 
