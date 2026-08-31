@@ -221,6 +221,45 @@ ls -l /usr/share/wayland-sessions
 Do not add `dbus-run-session`, a manual `DISPLAY`, or
 `xwayland-satellite`. `niri-session` owns the supported session setup.
 
+### Preserve Secret Service unlock through greetd
+
+Chapter 07 attached GNOME Keyring to `/etc/pam.d/login` for the original
+console-login path. greetd uses its own PAM service file, so those
+program-specific hooks do not automatically apply to a tuigreet login.
+
+Back up the packaged greetd policy before changing it:
+
+```bash
+sudo cp --archive /etc/pam.d/greetd /etc/pam.d/greetd.before-gnome-keyring
+sudoedit /etc/pam.d/greetd
+```
+
+Preserve every existing line. Add the authentication hook at the end of the
+existing `auth` section:
+
+```pam
+auth       optional     pam_gnome_keyring.so
+```
+
+Add the session hook at the end of the existing `session` section:
+
+```pam
+session    optional     pam_gnome_keyring.so auto_start
+```
+
+The password-change hook in `/etc/pam.d/passwd` remains the one installed in
+chapter 07; do not duplicate it in the greetd policy. Verify only the intended
+additions and the module path:
+
+```bash
+sudo grep -n 'pam_gnome_keyring' /etc/pam.d/greetd /etc/pam.d/passwd
+test -e /usr/lib/security/pam_gnome_keyring.so
+```
+
+Keep the current Niri session and the recovery TTY available. A syntax error
+in any PAM policy can prevent a new login even though an already authenticated
+session continues to work.
+
 ## Enable with a live recovery TTY
 
 Open `Ctrl+Alt+F3`, log in as `neon`, and leave that shell open. Return to Niri,
@@ -241,7 +280,14 @@ loginctl session-status
 systemctl status greetd.service --no-pager
 pgrep -a niri
 pgrep -a swayidle
+systemctl --user is-active gnome-keyring-daemon.service
+busctl --user list | grep 'org.freedesktop.secrets'
 ```
+
+The keyring service must be active and the Secret Service bus name must be
+present without asking separately for the login-keyring password. If the
+keyring stays locked, return to the recovery TTY and inspect the greetd PAM
+lines before rebooting.
 
 Then repeat:
 
@@ -268,6 +314,7 @@ If tuigreet or Niri fails, switch to `Ctrl+Alt+F3`, log in, and disable greetd:
 ```bash
 sudo systemctl disable --now greetd.service
 sudo cp --archive /etc/greetd/config.toml.before-niri /etc/greetd/config.toml
+sudo cp --archive /etc/pam.d/greetd.before-gnome-keyring /etc/pam.d/greetd
 systemctl reboot
 ```
 
@@ -291,6 +338,7 @@ make a greeter power menu work.
 - [ ] Manual and lid-triggered suspend resume behind the locker.
 - [ ] greetd was enabled only after the previous checks passed.
 - [ ] tuigreet starts Niri without autologin.
+- [ ] A tuigreet login unlocks GNOME Keyring through greetd's PAM policy.
 - [ ] Exiting Niri returns to tuigreet.
 - [ ] `Ctrl+Alt+F3` remains a working recovery route.
 - [ ] A full reboot completes successfully.
@@ -299,6 +347,7 @@ make a greeter power menu work.
 
 - [greetd package](https://archlinux.org/packages/extra/x86_64/greetd/)
 - [greetd-tuigreet package](https://archlinux.org/packages/extra/x86_64/greetd-tuigreet/)
+- [ArchWiki: GNOME Keyring](https://wiki.archlinux.org/title/GNOME/Keyring)
 - [swayidle package](https://archlinux.org/packages/extra/x86_64/swayidle/)
 - [swaylock package](https://archlinux.org/packages/extra/x86_64/swaylock/)
 - [tuigreet upstream documentation](https://github.com/tuigreet/tuigreet)
