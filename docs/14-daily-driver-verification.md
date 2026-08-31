@@ -267,14 +267,16 @@ Any repeated post-resume Wi-Fi lockup is a critical daily-driver issue.
 sudo tlp-stat -s
 sudo tlp-stat -b
 sudo tlp-stat -p
-powerprofilesctl get
+tlpctl list
+tlpctl get
 sensors
 brightnessctl info
 ```
 
 Confirm TLP/`tlp-pd` is the only power-profile implementation and that the
 ThinkPad charge thresholds are 75/80. Test all three profiles through
-`powerprofilesctl`, then return to the intended default.
+`tlpctl performance`, `tlpctl balanced`, and `tlpctl power-saver`, then restore
+the normal source-based automatic selection with `sudo tlp start`.
 
 Run three suspend cycles:
 
