@@ -271,26 +271,20 @@ Confirm that:
 The discard flag permits requests to pass through dm-crypt. It does not enable
 continuous discard on ext4 and does not itself schedule a TRIM operation.
 
-If `cryptsetup status cryptlvm` reports that the mapping is inactive while the
-system is nevertheless running from `vg0-root`, stop the chapter. Zram cannot
-rename or close the LUKS mapping. Capture the actual active stack instead of
-continuing with an assumed name:
+If `sudo cryptsetup status cryptlvm` unexpectedly reports `inactive`, stop the
+chapter and recheck the active command line and block-device tree:
 
 ```bash
 cat /proc/cmdline
 findmnt -no SOURCE /
 ls -l /dev/mapper
 lsblk -o NAME,PATH,TYPE,FSTYPE,MOUNTPOINTS
-sudo dmsetup ls --tree
-crypt_name=$(lsblk -rno NAME,TYPE | awk '$2 == "crypt" { print $1; exit }')
-printf 'Detected dm-crypt mapping: %s\n' "$crypt_name"
-[ -n "$crypt_name" ] && sudo cryptsetup status "$crypt_name"
-sudo journalctl -b -u systemd-cryptsetup@cryptlvm.service --no-pager
 ```
 
-The canonical result is still `crypt_name=cryptlvm`. A different name means
-that the embedded command line or the booted UKI does not match the runbook;
-an empty value means the block tree needs diagnosis before enabling discard.
+Zram cannot rename or close the root LUKS mapping. Do not continue by guessing
+another name or changing discard options. The expected tree contains
+`cryptlvm` above `vg0-root`; if it does not, use the handbook's storage and
+incident-recovery guides for the deeper mapper, initrd, and journal diagnosis.
 
 ## Verify zram and swap priority
 

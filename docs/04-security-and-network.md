@@ -20,9 +20,10 @@ This chapter makes the following changes:
 - keeps outbound traffic and replies to established connections working;
 - audits listening TCP and UDP sockets before and after the change.
 
-It does not enable the SSH server, open application ports, configure a trusted
-home zone, install a graphical firewall interface, add IP blocklists, alter
-DNS, apply broad sysctl hardening, or replace NetworkManager.
+It does not enable the SSH server, open application ports, configure a
+home-specific zone, use firewalld's unrestricted `trusted` zone, install a
+graphical firewall interface, add IP blocklists, alter DNS, apply broad sysctl
+hardening, or replace NetworkManager.
 
 ## Prerequisites
 
@@ -296,9 +297,44 @@ Do not bind the interface manually with `firewall-cmd --add-interface`.
 NetworkManager owns the connection and notifies firewalld when its interface
 appears, disappears, or changes name.
 
-Later, a deliberately trusted Wi-Fi profile may be assigned to a separate
+Later, a reviewed home Wi-Fi profile may be assigned to a separate restricted
 zone, but the initial baseline treats every unknown, home, university, and
 mobile-hotspot connection as public.
+
+## Why there is no home or trusted zone yet
+
+Using `public` at home does not prevent outbound browsing, package downloads,
+Git, streaming, or replies to connections initiated by the laptop. A separate
+home zone becomes useful only when the laptop must accept a specific inbound
+service from the LAN, such as reviewed SSH administration, local discovery,
+printing, or file synchronization.
+
+Do not assign the home profile to firewalld's predefined `trusted` zone. That
+zone accepts every incoming connection; its name means unrestricted policy,
+not “my Wi-Fi uses a password”. The predefined `home` zone still filters, but
+it ships with selected services that must be inspected before use:
+
+```bash
+sudo firewall-cmd --zone=home --list-all
+sudo firewall-cmd --permanent --zone=home --list-all
+sudo firewall-cmd --zone=trusted --list-all
+```
+
+Do not modify or assign either zone in this chapter. When an inbound home-LAN
+requirement exists, create a separate reviewed change that:
+
+1. identifies the exact service and clients that need access;
+2. uses `home` or a custom restricted zone, never blanket `trusted`;
+3. permits only that service plus required client networking;
+4. binds the exact NetworkManager home connection profile to the zone;
+5. tests the rule at runtime before making it permanent; and
+6. confirms that every other connection continues to use `public`.
+
+A NetworkManager profile identifies how this laptop connects; it does not
+authenticate every router, guest, IoT device, or compromised peer on that LAN.
+Creating an empty home zone now would merely duplicate `public` while adding
+policy to maintain. Opening broad access now would weaken the baseline without
+providing a feature.
 
 ## Verify nftables ownership
 
@@ -468,6 +504,7 @@ The chapter is complete when:
 - [Arch manual: firewalld.zones(5)](https://man.archlinux.org/man/firewalld.zones.5)
 - [Arch manual: ss(8)](https://man.archlinux.org/man/ss.8)
 - [Arch package: firewalld](https://archlinux.org/packages/extra/any/firewalld/)
+- [Firewalld: predefined zones](https://firewalld.org/documentation/zone/predefined-zones.html)
 - [NetworkManager: firewalld zone integration](https://firewalld.org/documentation/zone/connections-interfaces-and-sources.html)
 
 ## Next step
