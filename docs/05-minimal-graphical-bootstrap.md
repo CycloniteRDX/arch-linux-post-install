@@ -13,6 +13,8 @@ This chapter makes the following changes:
 - installs GTK and GNOME desktop portals;
 - installs PipeWire, its PulseAudio and ALSA compatibility layers, and
   WirePlumber;
+- installs RealtimeKit as the controlled real-time scheduling broker used by
+  PipeWire and the desktop portal;
 - installs polkit and the MATE graphical authentication agent;
 - installs `xwayland-satellite` for X11 application compatibility;
 - selects GNU Stow as the transparent dotfile deployment method;
@@ -50,6 +52,7 @@ Remain at a local TTY until the guide explicitly starts Niri.
 | Screencast portal | `xdg-desktop-portal-gnome` |
 | Audio server | PipeWire |
 | Audio policy manager | WirePlumber |
+| Real-time scheduling broker | RealtimeKit, activated through system D-Bus |
 | Graphical authorization | polkit with `mate-polkit` |
 | Dotfile deployment | GNU Stow |
 | Session start | Manual `niri-session -l` from TTY |
@@ -129,6 +132,7 @@ sudo pacman -Syu \
     pipewire-alsa \
     pipewire-pulse \
     wireplumber \
+    rtkit \
     alsa-utils \
     polkit \
     mate-polkit \
@@ -149,7 +153,8 @@ The diagnostic packages are intentional:
 | `mesa-utils` | OpenGL renderer and XWayland check with `glxinfo` |
 | `vulkan-tools` | Vulkan driver check with `vulkaninfo` |
 | `libva-utils` | VA-API driver check with `vainfo` |
-| `alsa-utils` | Basic device and mixer diagnostics |
+| `alsa-utils` | Device diagnostics and an audible ALSA compatibility test |
+| `rtkit` | Controlled real-time scheduling for PipeWire and the Realtime portal |
 
 `ttf-dejavu` supplies a dependable initial font for Kitty. The complete font
 selection remains in chapter 08.
@@ -191,6 +196,7 @@ pacman -Q \
     pipewire-alsa \
     pipewire-pulse \
     wireplumber \
+    rtkit \
     alsa-utils \
     polkit \
     mate-polkit \
@@ -201,7 +207,7 @@ pacman -Q \
 Check the principal commands and the graphical polkit agent:
 
 ```bash
-command -v niri niri-session kitty stow wpctl vulkaninfo vainfo glxinfo
+command -v niri niri-session kitty stow wpctl pw-play speaker-test vulkaninfo vainfo glxinfo
 test -x /usr/lib/mate-polkit/polkit-mate-authentication-agent-1
 ```
 
@@ -212,9 +218,11 @@ systemd installation uses its existing logind session for device access.
 
 ## Keep user services activation-based
 
-Do not run `sudo systemctl enable` for PipeWire, WirePlumber, or the portals.
-They are user-session services and are started through user sockets, D-Bus,
-and the graphical session target.
+Do not run `sudo systemctl enable` for PipeWire, WirePlumber, the portals, or
+`rtkit-daemon.service`. The first group consists of user-session services and
+is started through user sockets, user D-Bus, and the graphical session target.
+RealtimeKit is a system service activated on demand through system D-Bus; its
+unit is static by design.
 
 Inspect their installed state without changing it:
 
@@ -416,7 +424,22 @@ The Niri log should contain an X11 socket message. Do not add a manual
 XWayland autostart merely because the process was absent before the first X11
 client.
 
-## Verify PipeWire and WirePlumber
+## Verify RealtimeKit, PipeWire, and WirePlumber
+
+Ask system D-Bus for the RealtimeKit interface:
+
+```bash
+busctl --system introspect \
+    org.freedesktop.RealtimeKit1 \
+    /org/freedesktop/RealtimeKit1 \
+    org.freedesktop.RealtimeKit1
+systemctl is-active rtkit-daemon.service
+```
+
+The interface and properties must be listed, and the service should become
+active. Do not enable it: the D-Bus request is supposed to activate the static
+unit on demand. RealtimeKit grants bounded scheduling priority under policy;
+it does not turn the desktop session into an unrestricted real-time process.
 
 Inspect the active audio graph and its user services:
 
@@ -429,11 +452,46 @@ systemctl --user is-active \
 ```
 
 All three services should be active, and `wpctl status` should list the
-ThinkPad audio devices. Detailed routing, microphones, Bluetooth audio, and
-media-key bindings are handled in later chapters.
+ThinkPad audio devices. Set a conservative test volume and unmute the current
+default output:
 
-Do not enable these units manually if they are working. Their activation model
-is already providing the correct per-user lifecycle.
+```bash
+wpctl get-volume @DEFAULT_AUDIO_SINK@
+wpctl set-volume @DEFAULT_AUDIO_SINK@ 35%
+wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
+```
+
+First test native PipeWire playback with the packaged ALSA voice sample:
+
+```bash
+pw-play /usr/share/sounds/alsa/Front_Center.wav
+```
+
+Then verify that ordinary ALSA clients also reach PipeWire through
+`pipewire-alsa`:
+
+```bash
+speaker-test -D default -c 2 -t wav -l 1
+```
+
+The first command should play a centre voice. The second should announce the
+front-left and front-right channels once and then exit. Hearing both tests
+proves more than service activation: `pw-play` uses PipeWire natively, while
+`speaker-test` exercises the ALSA compatibility path used by many programs.
+
+If a command runs but remains silent, inspect the selected default sink in
+`wpctl status`, its mute state, and the physical output before continuing. Do
+not install PulseAudio or copy an unreviewed WirePlumber rule. Chapter 07 adds
+`pavucontrol`, route and profile inspection, microphone recording, and
+Bluetooth audio tests.
+
+The minimal Niri file deployed in this chapter deliberately has no volume or
+microphone media-key bindings. The ThinkPad mute keys and their LEDs are
+therefore not a pass criterion here: chapter 06 verifies that the key events
+and LED devices reach Linux, and chapter 10 deploys and tests the bindings.
+
+Do not enable the PipeWire or WirePlumber units manually if they are working.
+Their activation model is already providing the correct per-user lifecycle.
 
 ## Verify the portals
 
@@ -459,6 +517,12 @@ journalctl --user -b \
     -u xdg-desktop-portal-gnome.service \
     --no-pager
 ```
+
+With `rtkit` installed, a new log message stating that
+`org.freedesktop.RealtimeKit1` is not activatable is not expected. A message
+recorded earlier in the current boot can remain in the journal after the
+package is installed, so compare its timestamp with the latest portal start
+instead of treating old journal history as a new failure.
 
 Do not set `GDK_BACKEND` globally. Niri upstream explicitly warns that doing so
 breaks the GNOME screencast portal.
@@ -551,8 +615,8 @@ be reviewed before another deployment.
 
 - [ ] The AMD controller uses the `amdgpu` kernel driver.
 - [ ] Mesa, RADV, and the Mesa VA-API driver are installed.
-- [ ] Niri, Kitty, both portal backends, PipeWire, WirePlumber, polkit, and
-      `xwayland-satellite` are installed from official repositories.
+- [ ] Niri, Kitty, both portal backends, PipeWire, WirePlumber, RealtimeKit,
+      polkit, and `xwayland-satellite` are installed from official repositories.
 - [ ] No overlapping PulseAudio server or obsolete PipeWire session manager is
       installed.
 - [ ] The Niri config is deployed from `niri-dotfiles` with GNU Stow.
@@ -563,7 +627,9 @@ be reviewed before another deployment.
 - [ ] Niri exports the Wayland and X11 session variables.
 - [ ] `xwayland-satellite` starts on demand without manual configuration.
 - [ ] The graphical polkit prompt succeeds.
+- [ ] RealtimeKit is available through system D-Bus without manual enabling.
 - [ ] PipeWire and WirePlumber are active and `wpctl status` sees devices.
+- [ ] Native PipeWire and ALSA-compatible speaker tests are audible.
 - [ ] Portal services have no failed units.
 - [ ] Vulkan, VA-API, and OpenGL identify the AMD/Mesa stack.
 - [ ] No greeter or automatic graphical login has been enabled.
@@ -579,6 +645,10 @@ be reviewed before another deployment.
 - [ArchWiki: Kitty](https://wiki.archlinux.org/title/Kitty)
 - [ArchWiki: PipeWire](https://wiki.archlinux.org/title/PipeWire)
 - [ArchWiki: WirePlumber](https://wiki.archlinux.org/title/WirePlumber)
+- [Arch Linux package: RealtimeKit](https://archlinux.org/packages/extra/x86_64/rtkit/)
+- [Arch Linux package: ALSA utilities](https://archlinux.org/packages/extra/x86_64/alsa-utils/)
+- [PipeWire: real-time module](https://pipewire.pages.freedesktop.org/pipewire/page_module_rt.html)
+- [XDG Desktop Portal: Realtime interface](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Realtime.html)
 - [ArchWiki: Polkit](https://wiki.archlinux.org/title/Polkit)
 - [ArchWiki: XDG Desktop Portal](https://wiki.archlinux.org/title/XDG_Desktop_Portal)
 - [Niri upstream: Getting Started](https://github.com/niri-wm/niri/wiki/Getting-Started)
