@@ -207,7 +207,7 @@ pacman -Q \
 Check the principal commands and the graphical polkit agent:
 
 ```bash
-command -v niri niri-session kitty stow wpctl pw-play speaker-test vulkaninfo vainfo glxinfo
+command -v niri niri-session kitty stow rtkitctl wpctl pw-play speaker-test vulkaninfo vainfo glxinfo
 test -x /usr/lib/mate-polkit/polkit-mate-authentication-agent-1
 ```
 
@@ -426,20 +426,24 @@ client.
 
 ## Verify RealtimeKit, PipeWire, and WirePlumber
 
-Ask system D-Bus for the RealtimeKit interface:
+Ask the packaged control utility to start RealtimeKit if necessary, then read
+one of its published properties directly through system D-Bus:
 
 ```bash
-busctl --system introspect \
+rtkitctl --start
+busctl --system get-property \
     org.freedesktop.RealtimeKit1 \
     /org/freedesktop/RealtimeKit1 \
-    org.freedesktop.RealtimeKit1
+    org.freedesktop.RealtimeKit1 \
+    MaxRealtimePriority
 systemctl is-active rtkit-daemon.service
 ```
 
-The interface and properties must be listed, and the service should become
-active. Do not enable it: the D-Bus request is supposed to activate the static
-unit on demand. RealtimeKit grants bounded scheduling priority under policy;
-it does not turn the desktop session into an unrestricted real-time process.
+`rtkitctl --start` and the property query must succeed, the latter should print
+an integer value, and the service should become active. Do not enable it: the
+D-Bus request is supposed to activate the static unit on demand. RealtimeKit
+grants bounded scheduling priority under policy; it does not turn the desktop
+session into an unrestricted real-time process.
 
 Inspect the active audio graph and its user services:
 
