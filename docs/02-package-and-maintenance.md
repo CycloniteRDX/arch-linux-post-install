@@ -9,7 +9,8 @@ Linux update workflow.
 This chapter makes the following changes:
 
 - upgrades every package from the enabled official repositories;
-- installs `git`, `openssh`, and `pacman-contrib`;
+- installs `git`, `openssh`, `pacman-contrib`, and the `fakeroot` helper used
+  by `checkupdates`;
 - enables the weekly `paccache.timer`;
 - optionally replaces the mirror list only if the current one is demonstrably
   unsuitable;
@@ -84,7 +85,7 @@ Use one transaction to upgrade the complete system and install the tools needed
 by this and later chapters:
 
 ```bash
-sudo pacman -Syu git openssh pacman-contrib
+sudo pacman -Syu git openssh pacman-contrib fakeroot
 ```
 
 The packages have distinct responsibilities:
@@ -94,6 +95,13 @@ The packages have distinct responsibilities:
 | `git` | Obtain and inspect the project repositories and later deploy reviewed dotfiles. |
 | `openssh` | Provide the SSH client and key tools used by Git remotes. |
 | `pacman-contrib` | Provide `checkupdates`, `paccache`, `pacdiff`, and other pacman maintenance tools. |
+| `fakeroot` | Let `checkupdates` synchronize its isolated temporary package database without requiring root. |
+
+`fakeroot` is currently an optional dependency of `pacman-contrib`, not a
+mandatory one, so pacman does not install it automatically. The complete
+`base-devel` group also depends on `fakeroot`, but this chapter needs only the
+small helper. Keep `base-devel` deferred until the machine will actually build
+Arch packages or use the AUR.
 
 Installing `openssh` also places the SSH server binary and its systemd unit on
 the machine. It does not enable remote login. Do not start or enable
@@ -196,11 +204,22 @@ when disk pressure is real and the consequences are understood.
 it does not put the system into a partial-upgrade state:
 
 ```bash
+command -v fakeroot
 checkupdates
 ```
 
 It prints package names with their installed and available versions. No output
 and exit status 2 means that no updates are available; it is not an error.
+
+If it reports `Cannot find the fakeroot binary`, verify that the optional
+runtime helper from this chapter is still installed:
+
+```bash
+pacman -Q pacman-contrib fakeroot
+```
+
+Install `fakeroot` rather than the complete `base-devel` group unless package
+building is also an explicit goal.
 
 `checkupdates` is informational. It does not replace reading Arch news or
 running a complete `sudo pacman -Syu` transaction.
@@ -366,7 +385,7 @@ Never automate confirmation of package transactions on this workstation.
 ## Completion checkpoint
 
 ```bash
-pacman -Q git openssh pacman-contrib
+pacman -Q git openssh pacman-contrib fakeroot
 systemctl is-enabled paccache.timer
 systemctl is-enabled sshd.service
 sudo pacdiff --output
@@ -376,7 +395,8 @@ systemctl --failed
 The chapter is complete when:
 
 - the full upgrade and all package hooks completed successfully;
-- Git, OpenSSH, and pacman-contrib are installed;
+- Git, OpenSSH, pacman-contrib, and the `fakeroot` runtime required by
+  `checkupdates` are installed;
 - unresolved package messages have been handled;
 - `pacdiff --output` lists no pending configuration files;
 - `paccache.timer` is enabled with its default three-version policy;
@@ -398,6 +418,8 @@ The chapter is complete when:
 - [Arch manual: paccache(8)](https://man.archlinux.org/man/paccache.8)
 - [Arch manual: pacdiff(8)](https://man.archlinux.org/man/pacdiff.8)
 - [Arch manual: reflector(1)](https://man.archlinux.org/man/reflector.1)
+- [Arch package: pacman-contrib](https://archlinux.org/packages/extra/x86_64/pacman-contrib/)
+- [Arch package: fakeroot](https://archlinux.org/packages/core/x86_64/fakeroot/)
 
 ## Next step
 

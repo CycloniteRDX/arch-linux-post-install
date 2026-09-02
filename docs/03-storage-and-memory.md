@@ -161,20 +161,22 @@ Back up the current command line:
 sudo cp -a /etc/kernel/cmdline /etc/kernel/cmdline.before-storage-memory
 ```
 
-Print the LUKS UUID and keep it visible:
+Store the LUKS UUID in the current shell and print it for review:
 
 ```bash
-sudo cryptsetup luksUUID /dev/nvme0n1p2
+luks_uuid=$(sudo cryptsetup luksUUID /dev/nvme0n1p2)
+printf '%s\n' "$luks_uuid"
 ```
 
-Edit the command-line source:
+Stop if the variable is empty or does not exactly match the UUID already used
+by `rd.luks.name=`. Generate the complete canonical line from that variable:
 
 ```bash
-sudo micro /etc/kernel/cmdline
+printf 'rd.luks.name=%s=cryptlvm rd.luks.options=%s=discard zswap.enabled=0 root=/dev/mapper/vg0-root rw\n' "$luks_uuid" "$luks_uuid" | sudo tee /etc/kernel/cmdline
 ```
 
-Keep the file on one line. Replace both `<LUKS_UUID>` placeholders with the
-exact UUID printed by `cryptsetup`:
+This avoids copying a long identifier between screens in a TTY. It writes this
+one-line structure, substituting the same UUID in both positions:
 
 ```text
 rd.luks.name=<LUKS_UUID>=cryptlvm rd.luks.options=<LUKS_UUID>=discard zswap.enabled=0 root=/dev/mapper/vg0-root rw
@@ -268,6 +270,27 @@ Confirm that:
 
 The discard flag permits requests to pass through dm-crypt. It does not enable
 continuous discard on ext4 and does not itself schedule a TRIM operation.
+
+If `cryptsetup status cryptlvm` reports that the mapping is inactive while the
+system is nevertheless running from `vg0-root`, stop the chapter. Zram cannot
+rename or close the LUKS mapping. Capture the actual active stack instead of
+continuing with an assumed name:
+
+```bash
+cat /proc/cmdline
+findmnt -no SOURCE /
+ls -l /dev/mapper
+lsblk -o NAME,PATH,TYPE,FSTYPE,MOUNTPOINTS
+sudo dmsetup ls --tree
+crypt_name=$(lsblk -rno NAME,TYPE | awk '$2 == "crypt" { print $1; exit }')
+printf 'Detected dm-crypt mapping: %s\n' "$crypt_name"
+[ -n "$crypt_name" ] && sudo cryptsetup status "$crypt_name"
+sudo journalctl -b -u systemd-cryptsetup@cryptlvm.service --no-pager
+```
+
+The canonical result is still `crypt_name=cryptlvm`. A different name means
+that the embedded command line or the booted UKI does not match the runbook;
+an empty value means the block tree needs diagnosis before enabling discard.
 
 ## Verify zram and swap priority
 
