@@ -8,8 +8,10 @@ brightness controls, function keys, touchpad, and TrackPoint.
 
 This chapter makes the following changes:
 
-- installs `fwupd` and enables its metadata-refresh timer;
+- installs `fwupd`, its UEFI capsule updater, and the metadata-refresh timer;
 - prevents fwupd's optional peer-to-peer cache from exposing a local server;
+- signs fwupd's package-owned EFI updater with the enrolled owner key;
+- configures fwupd to launch that signed updater directly, without Shim;
 - selects TLP as the only high-level power manager;
 - installs `tlp-pd` for the standard three-profile D-Bus interface;
 - enables TLP and its profile daemon;
@@ -45,6 +47,7 @@ to the laptop and with no unsaved work.
 | --- | --- |
 | Firmware client | `fwupd` with LVFS metadata refreshes |
 | Firmware installation | Explicit and operator-confirmed, never automatic |
+| Firmware Secure Boot path | Owner-key-signed fwupd EFI updater; no Shim |
 | Firmware peer-to-peer cache | Disabled; `passim.service` masked |
 | Power manager | TLP only |
 | Profile interface | `tlp-pd`, replacing `power-profiles-daemon` |
@@ -149,6 +152,7 @@ then install the chapter packages in one complete upgrade transaction:
 ```bash
 sudo pacman -Syu \
     fwupd \
+    fwupd-efi \
     tlp \
     tlp-pd \
     upower \
@@ -158,16 +162,18 @@ sudo pacman -Syu \
     wev
 ```
 
-Read the complete transaction before accepting it. Current `fwupd` packages
-pull in support libraries such as `fwupd-efi`, `udisks2`, `passim`, and BlueZ.
-That does not enable Bluetooth or select removable-media behavior; those
-services are integrated deliberately in chapter 07.
+Read the complete transaction before accepting it. `fwupd-efi` is listed
+explicitly because the Secure Boot procedure below uses its package-owned
+updater. The transaction can also pull in support libraries such as `udisks2`,
+`passim`, and BlueZ. That does not enable Bluetooth or select removable-media
+behavior; those services are integrated deliberately in chapter 07.
 
 The installed tools have distinct roles:
 
 | Package | Role |
 | --- | --- |
 | `fwupd` | Discover and install firmware delivered through LVFS |
+| `fwupd-efi` | Provide the EFI capsule updater that runs before Arch boots |
 | `tlp` | Apply one coherent laptop power policy and battery care |
 | `tlp-pd` | Expose TLP's performance, balanced, and power-saver profiles |
 | `upower` | Report batteries and power devices to users and desktop tools |
@@ -221,6 +227,85 @@ systemctl list-timers --all fwupd-refresh.timer --no-pager
 
 The timer downloads metadata; it does not install firmware automatically.
 
+## Prepare fwupd for owner-key Secure Boot
+
+The runbook enrolled local owner keys and signs systemd-boot and the UKIs with
+`sbctl`. It does not install or use Shim. Firmware capsule updates therefore
+need the same direct trust path: the package-owned fwupd EFI updater is signed
+with the enrolled owner key, and fwupd is told to launch it directly.
+
+First prove which package owns the unsigned updater:
+
+```bash
+pacman -Qo /usr/lib/fwupd/efi/fwupdx64.efi
+```
+
+The owner must be `fwupd-efi`. Stop if the file is missing or belongs to
+anything else; do not sign an unexplained EFI executable.
+
+Create a signed companion and save the input/output relationship in sbctl's
+file database:
+
+```bash
+sudo sbctl sign --save --output /usr/lib/fwupd/efi/fwupdx64.efi.signed /usr/lib/fwupd/efi/fwupdx64.efi
+```
+
+Verify the result and its saved registration:
+
+```bash
+sudo sbctl verify /usr/lib/fwupd/efi/fwupdx64.efi.signed
+sudo sbctl list-files
+```
+
+The signed file must verify successfully, and the saved file list must contain
+the fwupd updater. The `--save` registration allows sbctl's pacman hook to
+re-sign the output after a future `fwupd-efi` package upgrade replaces the
+unsigned input. Chapter 02's post-upgrade `sudo sbctl verify` remains mandatory.
+
+Now edit fwupd's existing configuration:
+
+```bash
+sudoedit /etc/fwupd/fwupd.conf
+```
+
+Preserve the existing `[fwupd]` section and its `P2pPolicy=nothing` setting.
+Add this separate section:
+
+```ini
+[uefi_capsule]
+DisableShimForSecureBoot=true
+```
+
+If `[uefi_capsule]` already exists, add only the setting inside it instead of
+creating a duplicate section. This option does not disable Secure Boot or
+relax signature verification. It tells fwupd that the trusted updater can be
+launched directly rather than chainloaded through a nonexistent
+`shimx64.efi`.
+
+Inspect the relevant settings and restart the D-Bus-activated daemon so that
+it reads the new configuration:
+
+```bash
+sudo grep -nE '^\[(fwupd|uefi_capsule)\]|^(P2pPolicy|DisableShimForSecureBoot)=' /etc/fwupd/fwupd.conf
+sudo systemctl restart fwupd.service
+```
+
+The effective local configuration must contain both policies under their
+respective sections:
+
+```ini
+[fwupd]
+P2pPolicy=nothing
+
+[uefi_capsule]
+DisableShimForSecureBoot=true
+```
+
+Do not install Shim, copy another distribution's `shimx64.efi`, create a fake
+symlink, disable Secure Boot, or set `OnlyTrusted=false`. Those actions would
+replace or weaken the deliberately constructed owner-key trust path instead
+of completing it.
+
 ## Inventory firmware before changing it
 
 Refresh metadata and inspect every recognized device:
@@ -262,6 +347,7 @@ upower -d
 sudo sbctl status
 sudo sbctl verify
 sudo bootctl status
+sudo sbctl verify /usr/lib/fwupd/efi/fwupdx64.efi.signed
 ```
 
 Apply only the releases offered by the enabled stable remotes:
@@ -270,15 +356,33 @@ Apply only the releases offered by the enabled stable remotes:
 sudo fwupdmgr update
 ```
 
-Read every prompt. Do not disconnect power, force a shutdown, close the lid,
-or press the reset button while firmware is being written. Some updates are
-staged for the next reboot and complete before Arch starts.
+Read every prompt. A capsule update can be staged by creating a UEFI boot entry
+named `Linux Firmware Updater` and selecting it once through `BootNext`. Before
+accepting the reboot, inspect the staged state:
 
-If fwupd reports an EFI, Secure Boot, or firmware-signature error, stop. Do not
-set `OnlyTrusted=false`, disable Secure Boot, or sign an unexplained EFI file as
-a shortcut. The runbook deliberately retained the Microsoft certificates
-alongside the owner keys; an exceptional updater-signing problem needs its own
-review.
+```bash
+fwupdmgr check-reboot-needed
+sudo sbctl status
+sudo sbctl verify
+sudo efibootmgr -v
+```
+
+Do not delete the firmware-updater entry or clear `BootNext`: both are part of
+the pending update. Do not disconnect power, force a shutdown, close the lid,
+or press the reset button while firmware is being written. Allow every
+firmware-controlled reboot to finish even if the ThinkPad restarts more than
+once.
+
+Two specific pre-staging errors identify an incomplete Secure Boot setup:
+
+| Error | Meaning and action |
+| --- | --- |
+| `fwupdx64.efi.signed cannot be found` | Repeat the package-ownership, sbctl signing, and verification steps above. |
+| `Shim is required but was not found` | Confirm the `[uefi_capsule]` section, then restart `fwupd.service` before retrying. |
+
+For any different EFI, Secure Boot, capsule, or firmware-signature error, stop
+and preserve the exact output. Do not use `--force`, install Shim as a shortcut,
+or sign a different executable merely because its name appears in an error.
 
 After a successful firmware reboot, verify the result and the boot chain:
 
@@ -288,7 +392,15 @@ hostnamectl
 sudo sbctl status
 sudo sbctl verify
 sudo bootctl status
+sudo efibootmgr -v
 ```
+
+`fwupdmgr get-history` must report `Success` for the release. `BootNext` should
+no longer exist because UEFI consumes it after one use. A persistent `Linux
+Firmware Updater` entry may remain outside `BootOrder`; that is harmless and
+allows fwupd to reuse it later. The normal `Linux Boot Manager` must remain in
+`BootOrder`. Do not delete entries merely because their numbers differ between
+machines.
 
 Do not assume that a firmware update preserves every UEFI preference. Recheck
 Secure Boot, Linux sleep mode, boot order, and any deliberately changed
@@ -688,7 +800,10 @@ the service audit.
 - [ ] `fwupd` recognizes the expected firmware devices.
 - [ ] `fwupd-refresh.timer` is enabled, but firmware installation is manual.
 - [ ] Peer-to-peer firmware caching is disabled and Passim is masked.
+- [ ] The package-owned fwupd EFI updater is signed and saved in sbctl's database.
+- [ ] fwupd is configured for direct owner-key launch without Shim.
 - [ ] Secure Boot and both UKIs still verify after any firmware update.
+- [ ] Firmware history, `BootNext`, and the final UEFI boot entries are checked.
 - [ ] TLP is the only installed and enabled high-level power manager.
 - [ ] `tlp-pd` is active and exposes three profiles.
 - [ ] TLP changes automatically between its AC and battery profiles.
@@ -720,6 +835,9 @@ the service audit.
 - [TLP upstream: Usage](https://linrunner.de/tlp/usage/index.html)
 - [TLP upstream: Battery care](https://linrunner.de/tlp/settings/battery.html)
 - [fwupd upstream: Basic usage and Passim](https://github.com/fwupd/fwupd)
+- [fwupd upstream: owner-key Secure Boot without Shim](https://github.com/fwupd/fwupd/discussions/9990)
+- [Arch Linux: fwupd-efi package files](https://archlinux.org/packages/extra/any/fwupd-efi/files/)
+- [sbctl manual](https://man.archlinux.org/man/sbctl.8)
 - [systemd: logind.conf](https://man.archlinux.org/man/logind.conf.5)
 - [Linux kernel: Platform profile selection](https://docs.kernel.org/userspace-api/sysfs-platform_profile.html)
 - [Linux kernel: LED class](https://docs.kernel.org/leds/leds-class.html)
