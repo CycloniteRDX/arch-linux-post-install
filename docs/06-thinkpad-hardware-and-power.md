@@ -691,34 +691,10 @@ the compositor. The timeout closes the diagnostic automatically even though
 the minimal Niri bootstrap does not yet contain a general close-window
 binding.
 
-Inspect the kernel LED class without changing any LED manually:
-
-```bash
-ls -1 /sys/class/leds
-for led in platform::mute platform::micmute; do
-    led_path="/sys/class/leds/$led"
-    if [ -d "$led_path" ]; then
-        printf '\n%s\n' "$led"
-        grep -H . "$led_path"/{brightness,max_brightness,trigger}
-    else
-        printf 'Missing LED device: %s\n' "$led_path"
-    fi
-done
-```
-
-The T14 normally exposes `platform::mute` and `platform::micmute`. In each
-`trigger` line, square brackets mark the selected kernel trigger; the usual
-audio triggers are `audio-mute` and `audio-micmute`. Record missing devices or
-a different selected trigger, but do not write directly to `brightness` or
-replace the trigger merely to make a light turn on. A manually forced LED can
-claim that a microphone is muted when PipeWire is still recording.
-
-This chapter proves that the key events and LED devices reach Linux; it does
-not duplicate user bindings in the system repository. Brightness, volume, and
-microphone bindings belong in `niri-dotfiles` and are deployed in chapter 10.
-That chapter tests the actual PipeWire state and the LED together, because an
-available LED device alone does not prove that a userspace mute action keeps
-it synchronized.
+This chapter proves that the key events reach the compositor; it does not
+duplicate user bindings in the system repository. Brightness, volume, and
+microphone bindings belong in `niri-dotfiles` and are deployed and tested in
+chapter 10.
 
 ## Verify touchpad and TrackPoint
 
@@ -816,7 +792,6 @@ the service audit.
 - [ ] Sensors show plausible readings without a custom fan daemon.
 - [ ] Brightness can be adjusted with `brightnessctl`.
 - [ ] The function row generates the expected hardware or Wayland events.
-- [ ] The speaker-mute and microphone-mute LED devices and triggers are recorded.
 - [ ] Touchpad and TrackPoint motion, buttons, and scrolling work.
 - [ ] No Passim listener or unexplained public firewall exception exists.
 - [ ] No system or user unit is unexpectedly failed.
@@ -840,8 +815,6 @@ the service audit.
 - [sbctl manual](https://man.archlinux.org/man/sbctl.8)
 - [systemd: logind.conf](https://man.archlinux.org/man/logind.conf.5)
 - [Linux kernel: Platform profile selection](https://docs.kernel.org/userspace-api/sysfs-platform_profile.html)
-- [Linux kernel: LED class](https://docs.kernel.org/leds/leds-class.html)
-- [Linux kernel: standard LED trigger names](https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/leds/common.yaml)
 - [libinput documentation](https://wayland.freedesktop.org/libinput/doc/latest/)
 
 ## Next step
