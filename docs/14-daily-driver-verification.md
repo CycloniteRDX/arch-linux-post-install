@@ -530,10 +530,11 @@ Use exactly one outcome:
 | `NOT READY` | Any boot, storage, trust, backup, authentication, suspend, network, or recurring stability failure remains unresolved. |
 
 Likely follow-ups that do not block `READY` include Plymouth, a graphical
-greeter, GTK/icon/cursor theming, an optional Mako alternative, Eww experiments,
-calendar synchronization, 48 Hz battery profile, and host-specific output
-overrides. They must not be smuggled into this verification as last-minute
-changes.
+greeter, an optional Mako alternative, Eww experiments, calendar
+synchronization, 48 Hz battery profile, and host-specific output overrides.
+They must not be smuggled into this verification as last-minute changes. The
+reviewed GTK, icon, cursor, palette, and wallpaper baseline is applied only
+after this readiness gate, in chapter 15.
 
 ## Final checklist
 

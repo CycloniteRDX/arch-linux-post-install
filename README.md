@@ -10,7 +10,7 @@ secure, maintainable, and complete Niri-based daily-driver workstation.
 
 ## Project status
 
-The complete chapters 00-14 are written and reviewed as one reproducible
+The complete chapters 00-15 are written and reviewed as one reproducible
 TTY-to-daily-driver path. The procedure still needs to be executed and recorded
 on each target ThinkPad before it can be considered hardware-validated.
 
@@ -64,6 +64,7 @@ This repository owns system-wide integration after the first boot:
 - Daily applications and their required system packages.
 - Niri, Kitty, greetd, and the packages underlying the selected desktop
   components.
+- The portable GTK, icon, cursor, palette, and wallpaper foundation.
 - Backup, recovery, and final daily-driver verification.
 
 ## Repository boundaries

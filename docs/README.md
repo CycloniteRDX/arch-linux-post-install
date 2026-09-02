@@ -23,6 +23,7 @@ Only chapters that already exist are linked.
 | [12. Backup and recovery](12-backup-and-recovery.md) | TTY, Kitty, and Arch ISO | Back up LUKS and Secure Boot material, create and test an encrypted Restic snapshot, and rehearse read-only ISO/chroot recovery. |
 | [13. Full dotfiles handoff](13-full-dotfiles-handoff.md) | Niri | Deploy the portable daily-driver Niri and Kitty configuration, verify all bindings, and prove clean GNU Stow reconstruction without secrets or generated state. |
 | [14. Daily-driver verification](14-daily-driver-verification.md) | TTY, Niri, and controlled reboots | Verify the complete trust, storage, update, network, hardware, desktop, portal, backup, recovery, and observation lifecycle before classifying the workstation. |
+| [15. Visual foundation](15-visual-foundation.md) | Niri and Kitty | Apply and verify the Midnight Circuit palette, project wallpaper, GTK dark preferences, Papirus icons, and Breeze cursor without replacing the modular desktop. |
 
 ## Why Niri is not the first command
 
@@ -40,14 +41,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01 and 02 |
 | Booting and system maintenance | Chapters 01, 02, 03, and 12 |
-| Graphical user interface | Chapters 05, 10, 11, and 13 |
+| Graphical user interface | Chapters 05, 10, 11, 13, and 15 |
 | Power management and laptops | Chapter 06 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapter 06 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08 and 10 |
+| Appearance | Chapters 08, 10, and 15 |
 | Console improvements | Chapters 02 and 08 |
 | Applications | Chapter 09 |
 
