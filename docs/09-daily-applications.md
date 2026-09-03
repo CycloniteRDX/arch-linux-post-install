@@ -293,19 +293,26 @@ mimeapps/.config/mimeapps.list
 It owns only portable user defaults. It does not store recent files, browser
 profiles, application state, credentials, or downloaded content.
 
-Go to the repository clone and inspect the tracked file:
+Go to the repository clone, select the reviewed chapter 09 checkpoint, and
+inspect the tracked file:
 
 ```bash
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
+git fetch --prune --tags origin
+git switch --detach post-install-09-v1
+git describe --tags --exact-match
+git log -1 --oneline
 cat mimeapps/.config/mimeapps.list
 ```
 
-The Git tree must be clean. The file must contain a `[Default Applications]`
-section and an `[Added Associations]` entry that associates `inode/directory`
-with `org.gnome.Nautilus.desktop`. Declaring a default alone is insufficient
-when an implementation cannot otherwise confirm that the desktop file handles
-that MIME type. Preview the deployment:
+The Git tree must be clean before switching. The checkpoint commands must
+identify `post-install-09-v1` and commit `7d60d9d`; detached HEAD is expected.
+The file must contain a `[Default Applications]` section and an
+`[Added Associations]` entry that associates `inode/directory` with
+`org.gnome.Nautilus.desktop`. Declaring a default alone is insufficient when an
+implementation cannot otherwise confirm that the desktop file handles that
+MIME type. Preview the deployment:
 
 ```bash
 stow --simulate --verbose --no-folding --target="$HOME" mimeapps

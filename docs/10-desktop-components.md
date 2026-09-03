@@ -63,13 +63,13 @@ it starts. Do not run two implementations of the same session role.
 Inspect the current Stow packages and targets:
 
 ```bash
-cd ~/Documents/Repositories/niri-dotfiles
+cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
 find ~/.config -maxdepth 2 -type f \( -path '*/waybar/*' -o -path '*/fuzzel/*' -o -path '*/mako/*' \) -print
 ```
 
-Adjust only the repository path if the clone is stored elsewhere. Existing
-untracked configuration must be reviewed and backed up before Stow is used.
+Existing untracked configuration must be reviewed and backed up before Stow is
+used.
 
 ## Install the selected components
 
@@ -90,6 +90,29 @@ Verify the commands:
 command -v waybar fuzzel mako swaybg notify-send wpctl brightnessctl
 pacman -Q waybar fuzzel mako swaybg libnotify
 ```
+
+Every command must resolve before testing a binding that spawns it. If Fuzzel
+is missing, `Super+D` cannot open a launcher and Niri may provide no graphical
+error dialog for the failed spawn.
+
+## Select the chapter 10 dotfiles checkpoint
+
+The repository's `main` branch contains later desktop stages. Select the exact
+configuration reviewed here instead of merging an older commit into a newer
+checkout:
+
+```bash
+git status --short --branch
+git fetch --prune --tags origin
+git switch --detach post-install-10-v1
+git describe --tags --exact-match
+git log -1 --oneline
+```
+
+The tree must be clean before switching. The last two commands must identify
+`post-install-10-v1` and commit `dac44e8`. Detached HEAD is expected. A
+`git merge --ff-only dac44e8` performed from a newer descendant does not select
+this checkpoint; Git correctly leaves the newer commit checked out.
 
 ## Validate before deployment
 
@@ -118,7 +141,7 @@ the controlled manual launch below is its functional validation.
 Preview every new package first:
 
 ```bash
-stow --simulate --verbose --no-folding --target="$HOME" waybar fuzzel mako wallpapers
+stow --simulate --verbose --no-folding --target="$HOME" waybar fuzzel mako
 ```
 
 Stop on any conflict. Do not use `--adopt`, delete an existing file blindly, or
@@ -127,7 +150,7 @@ turn a real user configuration into an unreviewed repository change.
 Deploy the new packages and reconcile the existing Niri package:
 
 ```bash
-stow --verbose --no-folding --target="$HOME" waybar fuzzel mako wallpapers
+stow --verbose --no-folding --target="$HOME" waybar fuzzel mako
 stow --restow --verbose --no-folding --target="$HOME" niri
 niri validate
 ```
@@ -135,6 +158,12 @@ niri validate
 The initial background is intentionally the solid colour `#18181c`. A personal
 wallpaper can be added later by replacing the `swaybg` spawn arguments with a
 reviewed path under `~/.local/share/wallpapers/`.
+
+This checkpoint deliberately has no `wallpapers` Stow package; that package is
+introduced with the reviewed visual foundation in chapter 15. It also retains
+the small shortcut set used during staged construction. `Super+Q`, `Super+F`
+and `Super+Shift+F` arrive with the complete portable binding set in chapter
+13; their absence here is not a failed key binding.
 
 ## Test components without restarting Niri
 
@@ -222,7 +251,7 @@ journalctl --user -b --no-pager | tail -n 200
 Disable only the newly added links from the dotfiles repository:
 
 ```bash
-stow --delete --verbose --target="$HOME" waybar fuzzel mako wallpapers
+stow --delete --verbose --target="$HOME" waybar fuzzel mako
 ```
 
 To restore the previous Niri bootstrap, use Git to inspect and deliberately

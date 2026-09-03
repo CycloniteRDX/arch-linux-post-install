@@ -79,6 +79,24 @@ systemctl is-enabled greetd.service
 
 The expected result is `disabled`.
 
+## Select the chapter 11 dotfiles checkpoint
+
+Before deploying swaylock, advance the clean dotfiles clone to the immutable
+configuration reviewed for this chapter:
+
+```bash
+cd ~/Projects/CycloniteRDX/niri-dotfiles
+git status --short --branch
+git fetch --prune --tags origin
+git switch --detach post-install-11-v1
+git describe --tags --exact-match
+git log -1 --oneline
+```
+
+The last two commands must identify `post-install-11-v1` and commit `63daf48`.
+Detached HEAD is expected. Stop rather than switching over an unexplained local
+change.
+
 ## Stage 1 — prove the locker
 
 From the `niri-dotfiles` root, preview and deploy only swaylock:

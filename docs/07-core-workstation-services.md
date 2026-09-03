@@ -260,9 +260,11 @@ blueman-manager
 Chapter 10 has not installed a notification daemon yet. At this checkpoint,
 Blueman can therefore fall back to a small centered GTK notification window
 after connecting or disconnecting a device. Under Niri that temporary window
-may remain until it is closed with `Super+Q`. Read and close it; do not disable
-Blueman's connection notifications merely to hide the fallback. Once the
-notification daemon is installed, the same events should become ordinary
+may remain until it is closed with its own window control. The deliberately
+small checkpoint does not define `Super+Q` yet; that binding arrives with the
+complete portable controls in chapter 13. Read and close the window; do not
+disable Blueman's connection notifications merely to hide the fallback. Once
+the notification daemon is installed, the same events should become ordinary
 timed desktop notifications.
 
 Pairing a device is not required to prove that the laptop controller works. If
@@ -377,15 +379,20 @@ UDisks starts on demand through D-Bus and uses polkit for privileged storage
 operations. Do not enable `udisks2.service` manually and do not add `neon` to a
 storage-related group.
 
-Update the reviewed dotfiles clone:
+Select the reviewed chapter 07 checkpoint:
 
 ```bash
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
-git pull --ff-only
+git fetch --prune --tags origin
+git switch --detach post-install-07-v1
+git describe --tags --exact-match
+git log -1 --oneline
 ```
 
-The tree must be clean before the pull. Review the new XDG autostart entry:
+The tree must be clean before switching. The last two commands must identify
+`post-install-07-v1` and commit `291d85b`. Detached HEAD is expected for this
+reproducible stage. Review the new XDG autostart entry:
 
 ```bash
 sed -n '1,120p' \

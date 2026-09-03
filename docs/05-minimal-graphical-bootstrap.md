@@ -237,18 +237,25 @@ systemctl --user list-unit-files \
 Static or indirectly activated units are normal. The meaningful functional
 checks happen after `niri-session` has imported the graphical environment.
 
-## Update the dotfiles repository
+## Select the chapter 05 dotfiles checkpoint
 
-Move to the clone created in chapter 02 and obtain only a fast-forward update:
+Move to the clone created in chapter 02, fetch the published tags, and select
+the immutable configuration reviewed for this chapter:
 
 ```bash
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
-git pull --ff-only
+git fetch --prune --tags origin
+git switch --detach post-install-05-v1
+git describe --tags --exact-match
+git log -1 --oneline
 ```
 
-The working tree must be clean before pulling. Stop if Git reports local
-changes or a divergent branch; do not overwrite an unexplained configuration.
+The working tree must be clean before switching. The last two commands must
+identify `post-install-05-v1` and commit `499059b`. A detached HEAD is expected:
+the tag freezes the small bootstrap even when `main` later gains more desktop
+components. Do not merge this older checkpoint into a newer checkout, because
+that does not move Git backwards.
 
 Confirm that the Stow package contains the reviewed bootstrap:
 

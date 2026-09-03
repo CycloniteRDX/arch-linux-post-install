@@ -24,12 +24,19 @@ Run these checks from Kitty:
 ```bash
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
-stow --simulate --verbose --no-folding --target="$HOME" niri autostart mimeapps waybar fuzzel mako wallpapers swaylock
+git fetch --prune --tags origin
+git switch --detach post-install-13-v1
+git describe --tags --exact-match
+git log -1 --oneline
+stow --simulate --verbose --no-folding --target="$HOME" niri autostart mimeapps waybar fuzzel mako swaylock
 niri validate
 ```
 
-The Git status must be clean before applying the new commit. Stow may report
-that existing links are already owned; it must not report a real conflict.
+The Git status must be clean before switching. The checkpoint commands must
+identify `post-install-13-v1` and commit `4bcd8cd`; detached HEAD is expected.
+Stow may report that existing links are already owned; it must not report a
+real conflict. The `wallpapers` package is not present yet and therefore is not
+included in this preview; chapter 15 introduces it.
 
 ## Portable policy
 
@@ -192,7 +199,7 @@ This test proves the package layout without touching the active home:
 
 ```bash
 mkdir -m 0700 ~/stow-handoff-test
-stow --verbose --no-folding --target="$HOME/stow-handoff-test" niri autostart mimeapps waybar fuzzel mako wallpapers swaylock kitty
+stow --verbose --no-folding --target="$HOME/stow-handoff-test" niri autostart mimeapps waybar fuzzel mako swaylock kitty
 find -L ~/stow-handoff-test -type l -print
 find ~/stow-handoff-test -type l -printf '%p -> %l\n' | sort
 ```
@@ -243,4 +250,3 @@ chapter 11. Never delete the complete dotfiles clone as a recovery shortcut.
 - [Niri outputs](https://github.com/YaLTeR/niri/wiki/Configuration%3A-Outputs)
 - [GNU Stow manual](https://www.gnu.org/software/stow/manual/stow.html)
 - [Kitty configuration](https://sw.kovidgoyal.net/kitty/conf/)
-

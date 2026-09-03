@@ -28,11 +28,16 @@ From Kitty:
 ```bash
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
+git fetch --prune --tags origin
+git switch --detach post-install-15-v1
+git describe --tags --exact-match
+git log -1 --oneline
 niri validate --config niri/.config/niri/config.kdl
 ```
 
-Stop if Git reports an unexpected local change or Niri rejects the current
-configuration.
+Stop if Git reports an unexpected local change before switching or Niri rejects
+the selected configuration. The checkpoint commands must identify
+`post-install-15-v1` and commit `0e66f44`; detached HEAD is expected.
 
 ## Component policy
 
