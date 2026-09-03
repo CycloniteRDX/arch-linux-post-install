@@ -191,7 +191,7 @@ Back up the packaged example before replacing it:
 
 ```bash
 sudo cp --archive /etc/greetd/config.toml /etc/greetd/config.toml.before-niri
-sudoedit /etc/greetd/config.toml
+sudo nano /etc/greetd/config.toml
 ```
 
 Set the complete file to:
@@ -231,7 +231,7 @@ Back up the packaged greetd policy before changing it:
 
 ```bash
 sudo cp --archive /etc/pam.d/greetd /etc/pam.d/greetd.before-gnome-keyring
-sudoedit /etc/pam.d/greetd
+sudo nano /etc/pam.d/greetd
 ```
 
 Preserve every existing line. Add the authentication hook at the end of the

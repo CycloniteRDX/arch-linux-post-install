@@ -225,11 +225,45 @@ Do not use `rfkill unblock all`: it can silently change deliberate Wi-Fi or
 WWAN state. Do not mask systemd's rfkill units; chapter 06 intentionally kept
 normal radio-state persistence.
 
+For normal daily use, power only the Bluetooth adapter down when it is not
+needed:
+
+```bash
+bluetoothctl power off
+bluetoothctl show | grep 'Powered:'
+systemctl is-active bluetooth.service
+nmcli radio wifi
+```
+
+The expected results are `Powered: no`, an active BlueZ service, and enabled
+Wi-Fi. This changes the BlueZ adapter's `Powered` property; it neither stops
+`bluetooth.service` nor disables the combined wireless controller. Turn the
+adapter back on with:
+
+```bash
+bluetoothctl power on
+bluetoothctl show | grep 'Powered:'
+systemctl is-active bluetooth.service
+nmcli radio wifi
+```
+
+The expected adapter state is now `Powered: yes`. Use these commands instead
+of stopping BlueZ, unloading a kernel module, changing UEFI settings, or
+running `rfkill ... all` merely to save battery.
+
 Open the canonical graphical manager from Niri:
 
 ```bash
 blueman-manager
 ```
+
+Chapter 10 has not installed a notification daemon yet. At this checkpoint,
+Blueman can therefore fall back to a small centered GTK notification window
+after connecting or disconnecting a device. Under Niri that temporary window
+may remain until it is closed with `Super+Q`. Read and close it; do not disable
+Blueman's connection notifications merely to hide the fallback. Once the
+notification daemon is installed, the same events should become ordinary
+timed desktop notifications.
 
 Pairing a device is not required to prove that the laptop controller works. If
 one is available, use Blueman or the following supported console flow:
@@ -288,7 +322,7 @@ sudo cp -a /etc/pam.d/passwd /etc/pam.d/passwd.before-gnome-keyring
 Edit the console-login policy:
 
 ```bash
-sudoedit /etc/pam.d/login
+sudo nano /etc/pam.d/login
 ```
 
 Add this line at the end of the existing `auth` section:
@@ -306,7 +340,7 @@ session    optional     pam_gnome_keyring.so auto_start
 Then edit the password-change policy:
 
 ```bash
-sudoedit /etc/pam.d/passwd
+sudo nano /etc/pam.d/passwd
 ```
 
 Append:
@@ -389,6 +423,18 @@ readlink -f ~/.config/autostart/udiskie.desktop
 The resolved path must point into the `niri-dotfiles` clone. Niri's systemd
 session starts the standard `xdg-desktop-autostart.target`, so no additional
 Niri-specific startup command is required.
+
+Make the user manager discover the newly deployed XDG autostart file before
+testing another Niri session:
+
+```bash
+systemctl --user daemon-reload
+```
+
+The XDG autostart generator normally runs when the user manager starts. A full
+reboot therefore also discovers the file, but merely closing and reopening
+Niri can reuse the existing user manager. `daemon-reload` reruns its generators
+and avoids making a reboot an accidental requirement.
 
 ## Restart the session and test removable media
 
@@ -488,7 +534,11 @@ busctl --user list | grep -E \
 ```
 
 Bluetooth and all listed user services must be active; udiskie must have one
-process; the user bus must expose the Secret Service.
+process; the user bus must expose the Secret Service. It is valid for one
+keyring bus name to have a current owner while two related names appear as
+`(activatable)`: those names are registered for D-Bus activation on demand,
+not failed or disabled services. Do not enable extra keyring units manually;
+the functional `secret-tool` test below is the decisive check.
 
 Exercise the Secret Service with a disposable value:
 
@@ -527,8 +577,10 @@ firewalld service.
 
 ## Recovery
 
-If Bluetooth is not wanted or causes a hardware problem, disable only its
-daemon while retaining the installed diagnostic tools:
+For ordinary battery saving, leave the daemon enabled and use
+`bluetoothctl power off` as documented above. Only if the BlueZ daemon itself
+causes a hardware or service problem should it be disabled while retaining the
+installed diagnostic tools:
 
 ```bash
 sudo systemctl disable --now bluetooth.service

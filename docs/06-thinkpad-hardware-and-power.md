@@ -262,10 +262,16 @@ the fwupd updater. The `--save` registration allows sbctl's pacman hook to
 re-sign the output after a future `fwupd-efi` package upgrade replaces the
 unsigned input. Chapter 02's post-upgrade `sudo sbctl verify` remains mandatory.
 
+The operational chapters use `sudo nano` for administrative text edits because
+Nano is present in the tested minimal installation. After chapter 08 installs
+Micro, `sudo micro FILE` is also an acceptable interactive substitute. The
+handbook will explain `sudoedit`, editor selection, and why its environment can
+differ from an ordinary root-launched editor.
+
 Now edit fwupd's existing configuration:
 
 ```bash
-sudoedit /etc/fwupd/fwupd.conf
+sudo nano /etc/fwupd/fwupd.conf
 ```
 
 Preserve the existing `[fwupd]` section and its `P2pPolicy=nothing` setting.
@@ -466,7 +472,7 @@ grep -E '^[[:space:]]*(START|STOP)_CHARGE_THRESH' /etc/tlp.conf
 No output is expected on the fresh system. Create one focused local drop-in:
 
 ```bash
-sudoedit /etc/tlp.d/10-thinkpad-battery.conf
+sudo nano /etc/tlp.d/10-thinkpad-battery.conf
 ```
 
 Add exactly:
@@ -563,7 +569,7 @@ Create a local logind drop-in:
 
 ```bash
 sudo install -d -m 0755 /etc/systemd/logind.conf.d
-sudoedit /etc/systemd/logind.conf.d/70-thinkpad-suspend.conf
+sudo nano /etc/systemd/logind.conf.d/70-thinkpad-suspend.conf
 ```
 
 Add:
