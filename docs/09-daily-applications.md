@@ -71,7 +71,7 @@ integration layers without making this workstation more complete.
 Check whether an earlier test already installed an overlapping application:
 
 ```bash
-pacman -Q firefox chromium nautilus thunar dolphin papers evince loupe eog gnome-text-editor gedit celluloid vlc file-roller gnome-calendar libreoffice-still libreoffice-fresh code vim github-cli 2>&1
+pacman -Q firefox chromium nautilus thunar dolphin papers evince loupe eog gnome-text-editor gedit celluloid vlc file-roller gnome-calendar libreoffice-still libreoffice-fresh md4c code vim github-cli 2>&1
 ```
 
 On the clean canonical path, most or all entries should be absent. A package
@@ -118,6 +118,7 @@ sudo pacman -Syu \
     gnome-calculator \
     gnome-calendar \
     libreoffice-still \
+    md4c \
     hunspell-en_us \
     hunspell-es_es \
     code \
@@ -127,9 +128,12 @@ sudo pacman -Syu \
 
 Read the complete transaction before accepting it. Nautilus deliberately
 pulls the GNOME search and metadata stack; Celluloid pulls `mpv`; GNOME
-Calendar pulls Evolution Data Server; and LibreOffice is the largest
-application in this chapter. These are known parts of the selected functions,
-not reasons to accept unrelated optional packages.
+Calendar pulls Evolution Data Server; LibreOffice is the largest application
+in this chapter; and `md4c` provides the `libmd4c.so.0` runtime library loaded
+by the current Writer component. Listing that small library package explicitly
+keeps a clean installation functional even if the LibreOffice Still dependency
+metadata does not pull it in automatically. These are known parts of the
+selected functions, not reasons to accept unrelated optional packages.
 
 The dictionaries provide spelling data for US English and Spanish from Spain.
 They do not change `LANG`, the physical keyboard layout, Firefox's interface
@@ -250,12 +254,33 @@ pacman -Q \
     gnome-calculator \
     gnome-calendar \
     libreoffice-still \
+    md4c \
     hunspell-en_us \
     hunspell-es_es \
     code \
     vim \
     github-cli
 ```
+
+Confirm that the Markdown parser library belongs to the installed `md4c`
+package and that Writer has no unresolved shared-library dependency:
+
+```bash
+pacman -Qo /usr/lib/libmd4c.so.0
+ldd /usr/lib/libreoffice/program/libswlo.so | grep 'not found'
+```
+
+The first command must identify `md4c`. The second command must print nothing;
+in this check, no output means that every required shared library was found.
+If it instead reports `libmd4c.so.0 => not found`, stop before testing Writer,
+install `md4c` through a complete upgrade transaction, and repeat both checks:
+
+```bash
+sudo pacman -Syu md4c
+```
+
+Do not install `base-devel`, `fakeroot`, or an AUR helper to repair this error.
+They do not provide `libmd4c.so.0`.
 
 ## Deploy the default-application map
 
@@ -276,8 +301,11 @@ git status --short --branch
 cat mimeapps/.config/mimeapps.list
 ```
 
-The Git tree must be clean and the file must contain a `[Default Applications]`
-section. Preview the deployment:
+The Git tree must be clean. The file must contain a `[Default Applications]`
+section and an `[Added Associations]` entry that associates `inode/directory`
+with `org.gnome.Nautilus.desktop`. Declaring a default alone is insufficient
+when an implementation cannot otherwise confirm that the desktop file handles
+that MIME type. Preview the deployment:
 
 ```bash
 stow --simulate --verbose --no-folding --target="$HOME" mimeapps
@@ -345,6 +373,11 @@ org.gnome.Calendar.desktop
 libreoffice-writer.desktop
 ```
 
+The explicit `[Added Associations]` entry for `inode/directory` matters here.
+Kitty installs `kitty-open.desktop` as a valid directory handler, so it can be
+selected when Nautilus is named as the default but is not also recognized as
+associated with directories.
+
 Inspect the registered handlers as a second check:
 
 ```bash
@@ -355,9 +388,23 @@ gio mime video/mp4
 gio mime text/calendar
 ```
 
-Each result must identify the same default application. If a query is empty,
-confirm that the desktop file exists, that the Stow link resolves, and that
-the MIME name is spelled exactly as shown before changing anything.
+Each result must identify the same default application. If the directory query
+still returns `kitty-open.desktop`, do not remove or modify Kitty. Confirm the
+deployed declarations and register Nautilus with the standard user command:
+
+```bash
+grep -n -E '^\[Default Applications\]|^\[Added Associations\]|^inode/directory=' \
+    ~/.config/mimeapps.list
+xdg-mime default org.gnome.Nautilus.desktop inode/directory
+xdg-mime query default inode/directory
+gio mime inode/directory
+```
+
+The last two commands must now identify `org.gnome.Nautilus.desktop`. Because
+the deployed file is a Stow symlink, inspect `git diff` in `niri-dotfiles`
+after running the repair and retain only the intended association. If a query
+is empty, confirm that the desktop file exists, that the Stow link resolves,
+and that the MIME name is spelled exactly as shown before changing anything.
 
 Do not use `sudo xdg-mime`: defaults belong to `neon`. With the Stow package
 deployed, a graphical application's **Make default** button or an
@@ -430,9 +477,11 @@ test when no printer is required.
 
 GNOME Calendar stores and retrieves calendar data through Evolution Data
 Server. The dependency provides per-user source-registry, calendar-factory,
-and alarm-notification services. They are activation-based user services; do
-not enable them as system services and do not add them to the Niri
-configuration manually.
+and alarm-notification services. The source registry and factory are
+activation-based user services. The alarm notifier is different: it must keep
+running in the user session so it can notice a reminder while GNOME Calendar
+is closed. Do not enable any of them as system services and do not add a
+`spawn-at-startup` command for them to the Niri configuration.
 
 After opening GNOME Calendar, inspect the installed user units:
 
@@ -445,17 +494,35 @@ The factory units are expected to be static and may be active after the
 application requests them. Static does not mean broken: D-Bus activates them
 when a client needs them.
 
-Evolution Data Server also installs this standard XDG autostart entry:
+Evolution Data Server also installs an XDG autostart entry and an installable
+systemd user unit for the alarm notifier. Inspect both:
 
 ```bash
 ls -l /etc/xdg/autostart/org.gnome.Evolution-alarm-notify.desktop
+systemctl --user list-unit-files evolution-alarm-notify.service --no-pager
 systemctl --user status evolution-alarm-notify.service --no-pager
 ```
 
-The alarm service may not start until the next Niri login because the package
-was installed after the current session's autostart phase. Do not enable it
-manually merely to make the status active. Chapter 10 will install the
-notification daemon and then test a short disposable reminder end to end.
+On a clean Niri installation, the unit may report `disabled` under **STATE**
+and `enabled` under **PRESET**. These columns answer different questions:
+`STATE` describes the actual per-user enablement, whereas `PRESET` describes
+the package vendor's recommended default. A reboot does not change a disabled
+unit merely because its preset is enabled.
+
+Enable and start the alarm notifier explicitly for `neon`:
+
+```bash
+systemctl --user enable --now evolution-alarm-notify.service
+systemctl --user is-enabled evolution-alarm-notify.service
+systemctl --user is-active evolution-alarm-notify.service
+systemctl --user status evolution-alarm-notify.service --no-pager
+```
+
+The two short checks must return `enabled` and `active`. Do not use `sudo`:
+this is a user service. Enabling the packaged unit is preferable to editing
+the vendor XDG desktop file or starting a second copy from Niri. Chapter 10
+will install the notification daemon and then test a short disposable reminder
+end to end.
 
 This chapter creates only a local calendar. Do not install GNOME Control
 Center solely for its online-account panel, enter Google credentials, or add a
@@ -466,9 +533,12 @@ state and must not be added to `niri-dotfiles`.
 
 ## Verify the completed checkpoint
 
-Confirm that no system service was enabled by this chapter and no unit failed:
+Confirm that no system service was enabled by this chapter, the intended user
+alarm service is active, and no unit failed:
 
 ```bash
+systemctl --user is-enabled evolution-alarm-notify.service
+systemctl --user is-active evolution-alarm-notify.service
 systemctl --failed --no-pager
 systemctl --user --failed --no-pager
 sudo ss -lntup
@@ -519,6 +589,22 @@ silently to the main package command.
 
 ## Recovery and later changes
 
+To stop calendar reminders without deleting local events or disabling the
+calendar backend:
+
+```bash
+systemctl --user disable --now evolution-alarm-notify.service
+```
+
+Restore the canonical reminder behavior with:
+
+```bash
+systemctl --user enable --now evolution-alarm-notify.service
+```
+
+Neither command needs `sudo`, and neither changes the static D-Bus-activated
+source-registry or calendar-factory units.
+
 To remove only the deployed default map while preserving the repository file:
 
 ```bash
@@ -564,9 +650,12 @@ in the same reviewed change.
 - [ ] Celluloid plays local audio and video through PipeWire.
 - [ ] File Roller opens ZIP and 7-Zip archives and integrates with Nautilus.
 - [ ] LibreOffice Still opens Writer, Calc, and Impress documents.
+- [ ] `libmd4c.so.0` belongs to `md4c`, and Writer reports no missing shared
+      library.
 - [ ] GNOME Calendar preserves a disposable local event after restarting.
-- [ ] Evolution Data Server units are left activation-based and were not
+- [ ] Evolution Data Server factory units remain D-Bus-activated and were not
       manually enabled as system services.
+- [ ] `evolution-alarm-notify.service` is enabled and active as a user service.
 - [ ] No Google, CalDAV, or other online calendar account has been configured.
 - [ ] US English and Spanish spell checking are available.
 - [ ] GNOME Text Editor is the ordinary graphical text-file default.
@@ -591,6 +680,8 @@ in the same reviewed change.
 - [ArchWiki: LibreOffice](https://wiki.archlinux.org/title/LibreOffice)
 - [ArchWiki: Visual Studio Code](https://wiki.archlinux.org/title/Visual_Studio_Code)
 - [ArchWiki: Python](https://wiki.archlinux.org/title/Python)
+- [systemctl(1)](https://man.archlinux.org/man/systemctl.1)
+- [systemd.preset(5)](https://man.archlinux.org/man/systemd.preset.5)
 - [Arch packages: Firefox](https://archlinux.org/packages/extra/x86_64/firefox/)
 - [Arch packages: Nautilus](https://archlinux.org/packages/extra/x86_64/nautilus/)
 - [Arch packages: Papers](https://archlinux.org/packages/extra/x86_64/papers/)
@@ -600,6 +691,7 @@ in the same reviewed change.
 - [Arch packages: GNOME Calendar](https://archlinux.org/packages/extra/x86_64/gnome-calendar/)
 - [Arch packages: Evolution Data Server](https://archlinux.org/packages/extra/x86_64/evolution-data-server/)
 - [Arch packages: LibreOffice Still](https://archlinux.org/packages/extra/x86_64/libreoffice-still/)
+- [Arch packages: md4c file list](https://archlinux.org/packages/extra/x86_64/md4c/files/)
 - [Arch packages: Code - OSS](https://archlinux.org/packages/extra/x86_64/code/)
 - [Arch packages: GitHub CLI](https://archlinux.org/packages/extra/x86_64/github-cli/)
 
