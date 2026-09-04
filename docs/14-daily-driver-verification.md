@@ -529,12 +529,7 @@ Use exactly one outcome:
 | `READY WITH FOLLOW-UPS` | Core safety and daily use pass; explicitly non-critical improvements remain. |
 | `NOT READY` | Any boot, storage, trust, backup, authentication, suspend, network, or recurring stability failure remains unresolved. |
 
-Current follow-ups that do not block `READY` include hardware validation of the
-chapter 16 reviewed AUR workflow, Qt theming, advanced modular-dotfiles polish,
-battery-only automatic idle suspend, Plymouth, TPM2-bound unlock, calendar
-synchronization, a 48 Hz battery profile, and host-specific output overrides.
-They must not be smuggled into this verification as last-minute changes. The
-reviewed GTK, icon, cursor,
+Current follow-ups that do not block `READY` include the reviewed AUR workflow (chapter 16; hardware validation pending), Qt theming, advanced modular-dotfiles polish, battery-only automatic idle suspend, Plymouth, TPM2-bound unlock, calendar synchronization, a 48 Hz battery profile, and host-specific output overrides. They must not be smuggled into this verification as last-minute changes. The reviewed GTK, icon, cursor,
 palette, and wallpaper baseline is applied only after this readiness gate, in
 chapter 15.
 
