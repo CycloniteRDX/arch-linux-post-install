@@ -4,6 +4,11 @@ The sequence follows the major areas in ArchWiki General recommendations, but
 reorders them around safe and useful checkpoints for this ThinkPad profile.
 Every implementation chapter must leave the TTY recovery path operational.
 
+Chapters 00-15 passed the first complete hardware validation on 2026-09-04.
+The resulting system is classified `READY WITH FOLLOW-UPS`; later extension
+chapters do not invalidate this daily-driver baseline unless they modify one of
+its established ownership, trust, storage, or recovery boundaries.
+
 Only chapters that already exist are linked.
 
 | Chapter | Primary environment | Outcome |

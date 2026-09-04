@@ -26,8 +26,8 @@ The machine is **daily-driver ready** only when:
 - no secret or generated runtime state entered Git.
 
 Hibernation, TPM2 unlocking, Plymouth, automatic idle suspend, remote calendar
-synchronization, a graphical greeter, and host-specific output tuning are
-outside the current profile. Their absence is not a failed test.
+synchronization, and host-specific output tuning are outside the current
+profile. Their absence is not a failed test.
 
 ## Prepare the verification record
 
@@ -529,12 +529,13 @@ Use exactly one outcome:
 | `READY WITH FOLLOW-UPS` | Core safety and daily use pass; explicitly non-critical improvements remain. |
 | `NOT READY` | Any boot, storage, trust, backup, authentication, suspend, network, or recurring stability failure remains unresolved. |
 
-Likely follow-ups that do not block `READY` include Plymouth, a graphical
-greeter, an optional Mako alternative, Eww experiments, calendar
-synchronization, 48 Hz battery profile, and host-specific output overrides.
-They must not be smuggled into this verification as last-minute changes. The
-reviewed GTK, icon, cursor, palette, and wallpaper baseline is applied only
-after this readiness gate, in chapter 15.
+Current follow-ups that do not block `READY` include the reviewed AUR workflow,
+Qt theming, advanced modular-dotfiles polish, battery-only automatic idle
+suspend, Plymouth, TPM2-bound unlock, calendar synchronization, a 48 Hz battery
+profile, and host-specific output overrides. They must not be smuggled into
+this verification as last-minute changes. The reviewed GTK, icon, cursor,
+palette, and wallpaper baseline is applied only after this readiness gate, in
+chapter 15.
 
 ## Final checklist
 

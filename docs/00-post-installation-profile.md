@@ -146,7 +146,7 @@ hardening control regardless of usability.
 | Audio session | PipeWire with WirePlumber |
 | Privilege authorization | Polkit plus one graphical authentication agent |
 | Login start | Manual `niri-session` first; greetd only after validation |
-| Desktop shell | Individually selected components; no DMS or Noctalia dependency |
+| Desktop shell | Individually selected components; no complete-shell dependency |
 
 Niri and Kitty are installed after the initial TTY maintenance, storage, and
 security baseline. Their system packages belong here; the actual Niri and Kitty

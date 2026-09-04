@@ -21,7 +21,7 @@ The resulting lifecycle is:
   authentication.
 
 There is no autologin, hibernation, automatic idle suspend, passwordless power
-command, or graphical greeter in this baseline.
+command, or alternative greeter in this baseline.
 
 ## Why login comes last
 
@@ -59,9 +59,9 @@ pacman -Q greetd greetd-tuigreet swaylock swayidle 2>&1
 ```
 
 On the clean path, there is no active display manager and none of the four
-packages is installed. If GDM, SDDM, LightDM, greetd, DankGreeter, swaylock, or
-another idle daemon is already configured, stop. Do not layer this chapter on
-top of an existing login or lock lifecycle.
+packages is installed. If GDM, SDDM, LightDM, greetd, swaylock, or another idle
+daemon is already configured, stop. Do not layer this chapter on top of an
+existing login or lock lifecycle.
 
 ## Install without enabling the greeter
 
