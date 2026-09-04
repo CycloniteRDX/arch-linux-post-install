@@ -75,6 +75,8 @@ remote login becomes an explicit, separately secured requirement.
   PKGBUILD and related files before building.
 - Do not bootstrap software with an unreviewed `curl ... | sh` command.
 - An AUR helper is optional and is not a prerequisite for the workstation.
+  When chapter 16 is deliberately applied, Paru is the selected helper after
+  one complete manual review and build cycle.
 
 Detailed pacman, Git, PKGBUILD, and AUR usage belongs in the handbook.
 

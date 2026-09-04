@@ -12,11 +12,12 @@ secure, maintainable, and complete Niri-based daily-driver workstation.
 
 Chapters 00-15 are written, reviewed, and hardware-validated as one
 reproducible TTY-to-daily-driver path on the first target ThinkPad T14 Gen 1
-AMD. The 2026-09-04 result is `READY WITH FOLLOW-UPS`: the boot, storage,
-security, network, power, desktop, backup, and recovery baseline is ready for
-daily use, while AUR workflow, Qt theming, automatic idle suspend, Plymouth,
-TPM2-bound unlock, advanced desktop polish, and per-host output overrides
-remain deliberate later work.
+AMD and frozen as `v1.0.0`. The 2026-09-04 result is
+`READY WITH FOLLOW-UPS`: the boot, storage, security, network, power, desktop,
+backup, and recovery baseline is ready for daily use. Chapter 16 adds an
+optional reviewed AUR workflow and awaits hardware validation; Qt theming,
+automatic idle suspend, Plymouth, TPM2-bound unlock, advanced desktop polish,
+and per-host output overrides remain deliberate later work.
 
 ## Starting point
 

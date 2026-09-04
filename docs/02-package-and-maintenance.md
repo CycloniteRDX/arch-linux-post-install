@@ -98,10 +98,10 @@ The packages have distinct responsibilities:
 | `fakeroot` | Let `checkupdates` synchronize its isolated temporary package database without requiring root. |
 
 `fakeroot` is currently an optional dependency of `pacman-contrib`, not a
-mandatory one, so pacman does not install it automatically. The complete
-`base-devel` group also depends on `fakeroot`, but this chapter needs only the
-small helper. Keep `base-devel` deferred until the machine will actually build
-Arch packages or use the AUR.
+mandatory one, so pacman does not install it automatically. The official
+`base-devel` metapackage also depends on `fakeroot`, but this chapter needs only
+the small helper. Keep `base-devel` deferred until the machine will actually
+build Arch packages or use the AUR.
 
 Installing `openssh` also places the SSH server binary and its systemd unit on
 the machine. It does not enable remote login. Do not start or enable
@@ -218,8 +218,8 @@ runtime helper from this chapter is still installed:
 pacman -Q pacman-contrib fakeroot
 ```
 
-Install `fakeroot` rather than the complete `base-devel` group unless package
-building is also an explicit goal.
+Install `fakeroot` rather than the complete `base-devel` metapackage unless
+package building is also an explicit goal.
 
 `checkupdates` is informational. It does not replace reading Arch news or
 running a complete `sudo pacman -Syu` transaction.
@@ -346,7 +346,7 @@ Unlock LUKS and log in as `neon`. Then verify the new boot:
 
 ```bash
 uname -r
-pacman -Q linux git openssh pacman-contrib
+pacman -Q linux git openssh pacman-contrib fakeroot
 systemctl --failed
 sudo journalctl -b -p err --no-pager
 systemctl is-enabled paccache.timer
@@ -357,7 +357,7 @@ sudo sbctl verify
 Confirm that:
 
 - the updated kernel boots normally;
-- the three new packages are installed;
+- the four selected packages are installed;
 - no system units are failed;
 - the current boot journal contains no unexplained errors that began with this
   update;

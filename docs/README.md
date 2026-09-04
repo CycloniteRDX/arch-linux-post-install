@@ -9,6 +9,9 @@ The resulting system is classified `READY WITH FOLLOW-UPS`; later extension
 chapters do not invalidate this daily-driver baseline unless they modify one of
 its established ownership, trust, storage, or recovery boundaries.
 
+That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
+post-baseline extension and remains pending hardware validation.
+
 Only chapters that already exist are linked.
 
 | Chapter | Primary environment | Outcome |
@@ -29,6 +32,7 @@ Only chapters that already exist are linked.
 | [13. Full dotfiles handoff](13-full-dotfiles-handoff.md) | Niri | Deploy the portable daily-driver Niri and Kitty configuration, verify all bindings, and prove clean GNU Stow reconstruction without secrets or generated state. |
 | [14. Daily-driver verification](14-daily-driver-verification.md) | TTY, Niri, and controlled reboots | Verify the complete trust, storage, update, network, hardware, desktop, portal, backup, recovery, and observation lifecycle before classifying the workstation. |
 | [15. Visual foundation](15-visual-foundation.md) | Niri and Kitty | Apply and verify the Midnight Circuit palette, project wallpaper, GTK dark preferences, Papirus icons, and Breeze cursor without replacing the modular desktop. |
+| [16. Reviewed AUR workflow](16-reviewed-aur-workflow.md) | Kitty | Install the official build toolchain, audit and build Paru manually, then establish separate review-first maintenance for foreign packages. |
 
 ## Why Niri is not the first command
 
@@ -44,7 +48,7 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 
 | ArchWiki area | Primary destination |
 | --- | --- |
-| System administration and package management | Chapters 01 and 02 |
+| System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, and 12 |
 | Graphical user interface | Chapters 05, 10, 11, 13, and 15 |
 | Power management and laptops | Chapter 06 |
