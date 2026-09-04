@@ -9,7 +9,9 @@ The resulting system is classified `READY WITH FOLLOW-UPS`; later extension
 chapters do not invalidate this daily-driver baseline unless they modify one of
 its established ownership, trust, storage, or recovery boundaries.
 
-That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first post-baseline extension and remains pending hardware validation.
+That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
+post-baseline extension and passed hardware validation on 2026-09-04.
+
 Only chapters that already exist are linked.
 
 | Chapter | Primary environment | Outcome |

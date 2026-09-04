@@ -266,7 +266,7 @@ the selected tag or commit, and any upstream signature policy.
 From `~/Builds/aur/paru`, run exactly:
 
 ```bash
-makepkg -Csri
+makepkg -Ccsri
 ```
 
 There is deliberately no `sudo` before `makepkg`:
@@ -281,6 +281,12 @@ There is deliberately no `sudo` before `makepkg`:
 Read every dependency transaction and the final local-package installation.
 The recipe and compiler run as `neon`; only pacman's declared package
 transactions cross the privilege boundary.
+
+The two cleanup options are case-sensitive and have different moments of
+effect: `-C` cleans the old source tree before the build, while `-c` cleans
+`src/` and `pkg/` after a successful build. A completed `makepkg -Csri` run is
+still valid, but it intentionally lacks the post-build cleanup and therefore
+may leave those two directories behind.
 
 Stop on a failed check or build. Do not add `--nocheck`, edit out a dependency,
 run the build as root, or switch to a prebuilt package simply to turn the error
@@ -514,7 +520,7 @@ git merge --ff-only origin/master
 bat PKGBUILD .SRCINFO
 diff -u .SRCINFO <(makepkg --printsrcinfo)
 makepkg --verifysource
-makepkg -Csri
+makepkg -Ccsri
 ```
 
 The fast-forward-only merge preserves the AUR history and refuses an accidental
@@ -578,6 +584,30 @@ find ~/.cache/paru -maxdepth 4 -type f -name '*.pkg.tar.*' -printf '%p\n' 2>/dev
 Retaining a recent built archive and the reviewed Git recipe can help diagnose
 or temporarily recover one package. It is not a system snapshot and may not be
 compatible after other packages change.
+
+Keep `~/Builds/aur/paru` as the reviewed recipe and manual recovery clone. It
+is not a duplicate installation. If an earlier successful `makepkg -Csri` run
+left only the temporary `src/` and `pkg/` directories, inspect them first:
+
+```bash
+cd ~/Builds/aur/paru
+du -sh src pkg 2>/dev/null
+find . -maxdepth 1 -type d \( -name src -o -name pkg \) -print
+```
+
+They can be moved to Trash after Paru and the installed package have passed the
+completion checkpoint:
+
+```bash
+cd ~/Builds/aur/paru
+gio trash ./src ./pkg
+gio trash --list
+```
+
+This cleanup removes only reproducible build work. Retain the Git repository,
+`PKGBUILD`, `.SRCINFO`, downloaded sources, and recent package archive unless a
+later deliberate storage review decides otherwise. Future builds use
+`makepkg -Ccsri`, which performs both the pre-build and post-build cleanup.
 
 Do not make `paru -Sc` or `paru -Scc` part of routine maintenance. Paru extends
 cache cleanup to its AUR data, and aggressive cleanup can remove the exact
@@ -706,6 +736,8 @@ The chapter is complete when:
   and hooks were reviewed;
 - `makepkg` ran as `neon`, never as root;
 - the resulting `paru` executable is owned by the foreign `paru` package;
+- the reviewed `~/Builds/aur/paru` clone remains available as the manual
+  recovery path;
 - the complete `pacman -Qm` inventory is understood and recorded;
 - no unexplained orphan remains after the build;
 - official upgrades and AUR upgrades use the separate documented phases;
@@ -713,9 +745,10 @@ The chapter is complete when:
   rule, `SkipReview`, or generic verification bypass was introduced;
 - Pacman remains sufficient for official upgrades and removal if Paru fails.
 
-Do not commit a “validated” status until this complete sequence has been run on
-the target ThinkPad and at least one later no-op or real AUR update check has
-been understood.
+This complete sequence, including the later AUR update check, passed hardware
+validation on the target ThinkPad T14 Gen 1 AMD on 2026-09-04. The validated
+first build used `makepkg -Csri`; the absence of lowercase `-c` affected only
+post-build cleanup and did not affect the resulting package or installation.
 
 ## Sources
 
@@ -732,6 +765,5 @@ been understood.
 
 ## Next step
 
-Stop here until the chapter has been hardware-validated. After validation, the
-next independent extension is Qt 6 appearance integration without changing the
-GTK or modular desktop ownership model.
+The next independent extension is Qt 6 appearance integration without changing
+the GTK or modular desktop ownership model.
