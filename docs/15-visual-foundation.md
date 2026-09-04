@@ -12,7 +12,8 @@ cyan as the primary accent, and fuchsia used sparingly. It keeps Noto Sans and
 Noto Sans Mono and does not require a Nerd Font.
 
 This chapter does not replace Mako with SwayNotificationCenter, add Eww, theme
-Qt independently, enable a graphical greeter, or change lock and idle policy.
+Qt independently, change the selected tuigreet login path, or change lock and
+idle policy.
 Those are separate, reversible decisions.
 
 ## Prerequisites

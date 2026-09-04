@@ -10,9 +10,13 @@ secure, maintainable, and complete Niri-based daily-driver workstation.
 
 ## Project status
 
-The complete chapters 00-15 are written and reviewed as one reproducible
-TTY-to-daily-driver path. The procedure still needs to be executed and recorded
-on each target ThinkPad before it can be considered hardware-validated.
+Chapters 00-15 are written, reviewed, and hardware-validated as one
+reproducible TTY-to-daily-driver path on the first target ThinkPad T14 Gen 1
+AMD. The 2026-09-04 result is `READY WITH FOLLOW-UPS`: the boot, storage,
+security, network, power, desktop, backup, and recovery baseline is ready for
+daily use, while AUR workflow, Qt theming, automatic idle suspend, Plymouth,
+TPM2-bound unlock, advanced desktop polish, and per-host output overrides
+remain deliberate later work.
 
 ## Starting point
 
