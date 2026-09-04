@@ -13,8 +13,11 @@ failure. This chapter establishes four distinct safeguards:
    `arch-chroot`.
 
 The chapter does not automate retention, connect cloud storage, rotate LUKS or
-Secure Boot keys, restore a LUKS header, repartition a disk, or reinstall the
-bootloader. Those operations require a separately reviewed recovery event.
+Secure Boot keys, restore a LUKS header, repartition the internal system disk,
+or reinstall the bootloader. It can prepare one dedicated external backup disk
+after an explicit destructive checkpoint. Shrinking a filesystem, preserving
+files already on that disk, and restoring old backup media remain separate
+operations.
 
 ## Canonical storage map
 
@@ -32,6 +35,7 @@ Every command in this chapter assumes the installed profile:
 | Normal UKI | `/boot/EFI/Linux/arch-linux.efi` |
 | Fallback UKI | `/boot/EFI/Linux/arch-linux-fallback.efi` |
 | sbctl state and private keys | `/var/lib/sbctl` |
+| External backup | Dedicated GPT disk with one LUKS2 partition and ext4 filesystem labelled `ARCH-BACKUP` |
 
 Stop if the live system does not match this table. Never substitute a device
 name from memory when writing recovery metadata.
@@ -60,11 +64,20 @@ SSD; it does not protect against deletion, filesystem damage, or SSD failure.
 - Chapters 01 through 11 are complete.
 - The machine boots both UKIs with Secure Boot enabled.
 - The current LUKS passphrase is known and has been tested recently.
-- A separate encrypted external disk with enough free space is mounted
-  read-write. The filesystem used for the raw recovery bundle must preserve
-  Unix ownership and permissions.
+- A dedicated external disk with enough capacity is available. It may already
+  use the canonical encrypted layout, or it may be an expendable disk that can
+  be erased and prepared below. An NTFS disk is not ready for the complete
+  chapter merely because Restic could store repository files on it.
 - A second secure location is available for another copy of the small recovery
   bundle and the Restic password.
+
+Confirm that the storage tools inherited from earlier chapters are present:
+
+```bash
+command -v lsblk findmnt fdisk wipefs udevadm cryptsetup mkfs.ext4 udisksctl lsof
+```
+
+Every command name must resolve before preparing the disk.
 
 Connect the intended backup disk and identify it without changing anything:
 
@@ -72,6 +85,216 @@ Connect the intended backup disk and identify it without changing anything:
 lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS,MODEL,TRAN
 findmnt --real
 ```
+
+The external disk must be distinguishable from the internal NVMe by size,
+model, serial number and `TRAN=usb`. If it already contains data, stop here.
+Copy that data to another device and verify the copy before using any command
+from the destructive preparation section. Moving the only copy elsewhere on
+the same disk does not protect it from repartitioning.
+
+## Prepare a dedicated external backup disk
+
+Resolve and verify the persistent device path below for every disk. When
+`lsblk` already shows the intended external disk as one LUKS2 partition
+containing an ext4 filesystem, skip only the destructive subsections from
+**Unmount the existing NTFS filesystem** through **Establish the mount-root
+permissions**, then continue at **Test desktop unlocking and mounting**. The
+canonical layout is:
+
+```text
+external disk
+└─ GPT partition 1 — LUKS2 label ARCH-BACKUP-LUKS
+   └─ dm-crypt mapping
+      └─ ext4 label ARCH-BACKUP
+```
+
+LUKS protects the whole external filesystem, including the raw LUKS-header and
+Secure Boot material. Restic still encrypts its own repository independently:
+the two layers protect different objects and use independently recoverable
+passwords. The disk remains offline and locked when no backup or recovery task
+is running; do not add it to `/etc/fstab` or `/etc/crypttab`.
+
+This layout dedicates the disk to Linux backup and recovery. Windows does not
+natively unlock LUKS2 or mount ext4. If the physical disk must continue serving
+as ordinary Windows storage, use a different dedicated backup disk rather than
+weakening or complicating the recovery layout.
+
+### Resolve one persistent device path
+
+List the persistent names for USB storage:
+
+```bash
+ls -l /dev/disk/by-id/usb-*
+```
+
+Choose the entry for the whole backup disk, not an entry ending in `-part1`,
+and assign its exact path. The following value is deliberately invalid and
+must be replaced:
+
+```bash
+backup_disk=/dev/disk/by-id/usb-REPLACE_WITH_THE_EXACT_WHOLE_DISK_ID
+backup_partition="${backup_disk}-part1"
+```
+
+Resolve and inspect the selection without modifying it:
+
+```bash
+test -b "$backup_disk"
+readlink -f "$backup_disk"
+lsblk -d -o NAME,PATH,SIZE,TYPE,MODEL,SERIAL,TRAN,RM "$(readlink -f "$backup_disk")"
+sudo fdisk --list "$backup_disk"
+```
+
+Required observations:
+
+- `readlink` resolves to the external disk, for example `/dev/sda`, and never
+  to `/dev/nvme0n1`;
+- the model, serial number and capacity match the physical backup disk;
+- `TYPE` is `disk` and `TRAN` is `usb`;
+- `fdisk` shows the NTFS partition expected on that same disk.
+
+Do not continue when any property is ambiguous. A kernel name such as
+`/dev/sda` can change between boots; the persistent `/dev/disk/by-id/` path is
+kept in the shell variable so later commands cannot silently select a different
+disk.
+
+### Unmount the existing NTFS filesystem
+
+Inspect every child and mount point again:
+
+```bash
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$(readlink -f "$backup_disk")"
+```
+
+If the NTFS partition is mounted, close every application using it and unmount
+that exact partition. For a disk with one existing partition:
+
+```bash
+udisksctl unmount -b "$(readlink -f "$backup_partition")"
+```
+
+If the persistent `-part1` name does not exist, use the exact child path shown
+by `lsblk`. Confirm that no child of the selected disk has a mount point before
+continuing.
+
+### Destructive checkpoint
+
+The following operation erases the partition table and makes the existing NTFS
+contents inaccessible. It is not an in-place conversion. Run the two inspection
+commands one final time and physically compare their model, serial and capacity
+with the intended disk:
+
+```bash
+lsblk -d -o NAME,PATH,SIZE,MODEL,SERIAL,TRAN "$(readlink -f "$backup_disk")"
+sudo fdisk --list "$backup_disk"
+```
+
+Only after the old contents exist elsewhere and the target is certain, open
+`fdisk` with an exclusive lock:
+
+```bash
+sudo fdisk --lock=yes "$backup_disk"
+```
+
+Inside `fdisk`, enter these commands one at a time:
+
+```text
+p       inspect the existing table one last time
+g       create a new empty GPT
+n       create partition 1
+Enter   accept partition number 1
+Enter   accept the aligned first sector
+Enter   use the remaining disk capacity
+p       inspect the proposed GPT
+w       write it and exit
+```
+
+Nothing is written before `w`. If the displayed disk is wrong, use `q` instead
+and stop. After writing, let udev settle and verify that the persistent
+partition path now exists:
+
+```bash
+sudo udevadm settle
+test -b "$backup_partition"
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$(readlink -f "$backup_disk")"
+```
+
+### Create LUKS2 and ext4
+
+Remove any stale filesystem signature from the new partition, then create a
+labelled LUKS2 container. Both commands below are destructive and must target
+partition 1, never the whole disk or the internal NVMe:
+
+```bash
+sudo wipefs --all "$backup_partition"
+sudo cryptsetup luksFormat --type luks2 --verify-passphrase --label ARCH-BACKUP-LUKS "$backup_partition"
+```
+
+Type the explicit confirmation requested by `cryptsetup` and choose a long,
+unique passphrase. Store its recovery copy separately from this disk. Do not
+reuse either the laptop LUKS passphrase or the future Restic password.
+
+Open the new container and create ext4 inside it:
+
+```bash
+sudo cryptsetup open "$backup_partition" arch-backup
+sudo mkfs.ext4 -L ARCH-BACKUP /dev/mapper/arch-backup
+```
+
+Do not pass hand-chosen cipher, key-size, PBKDF, sector-size or ext4 tuning
+options. The current tools select hardware-aware and maintained defaults; this
+chapter has no measured requirement that justifies overriding them.
+
+### Establish the mount-root permissions
+
+Mount the empty filesystem once and make its root writable only by the
+canonical user. Root can still create the protected recovery directory later:
+
+```bash
+sudo install -d -m 0700 /mnt/arch-backup-setup
+sudo mount /dev/mapper/arch-backup /mnt/arch-backup-setup
+sudo chown neon:neon /mnt/arch-backup-setup
+sudo chmod 0700 /mnt/arch-backup-setup
+findmnt --target /mnt/arch-backup-setup
+stat -c '%A %U:%G %n' /mnt/arch-backup-setup
+df -hT /mnt/arch-backup-setup
+sudo umount /mnt/arch-backup-setup
+sudo cryptsetup close arch-backup
+```
+
+The expected permission line begins with `drwx------ neon:neon`. That ownership
+is stored in ext4 and therefore remains correct when the disk is mounted again.
+
+### Test desktop unlocking and mounting
+
+Unlock the LUKS partition through Nautilus, or from the terminal:
+
+```bash
+udisksctl unlock -b "$backup_partition"
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS "$(readlink -f "$backup_disk")"
+```
+
+The output identifies a new dm-crypt child containing ext4 with label
+`ARCH-BACKUP`. If the desktop did not mount it automatically, use the exact
+`/dev/mapper/luks-...` path printed by `lsblk`:
+
+```bash
+udisksctl mount -b /dev/mapper/luks-REPLACE_WITH_THE_EXACT_UUID
+```
+
+It should now be mounted at `/run/media/neon/ARCH-BACKUP`. Verify the source,
+filesystem and ownership before creating any backup:
+
+```bash
+findmnt --target /run/media/neon/ARCH-BACKUP
+df -hT /run/media/neon/ARCH-BACKUP
+stat -c '%A %U:%G %n' /run/media/neon/ARCH-BACKUP
+sudo cryptsetup status luks-REPLACE_WITH_THE_EXACT_UUID
+```
+
+Required results are an external dm-crypt source, ext4, read-write mount
+options and `drwx------ neon:neon`. If the mount point differs, use its exact
+path throughout the rest of the chapter.
 
 This guide uses the placeholder mount point:
 
@@ -92,11 +315,10 @@ The source must be the external disk. If `findmnt` resolves to `/`, `/home`, or
 the internal NVMe, stop.
 
 For the raw recovery bundle, also stop if the external filesystem is exFAT,
-FAT32, or NTFS, or if the underlying external device is not encrypted. Restic
+FAT32 or NTFS, or if the underlying external device is not encrypted. Restic
 encrypts its own repository and can use many filesystems, but the raw LUKS and
 sbctl material created below relies on an encrypted filesystem that preserves
-root-only permissions. Preparing the external disk itself is intentionally
-outside this chapter because formatting it is destructive.
+root-only permissions.
 
 ## Install the backup tools
 
@@ -325,10 +547,54 @@ different physical location. Verify its `SHA256SUMS` on that device. Store the
 Restic password independently, for example in a password manager with a tested
 recovery method or a sealed offline record.
 
+If this chapter created the first external disk, its own LUKS2 header also
+needs a copy outside that disk. Resolve `backup_partition` again through its
+persistent by-id path if this is a new shell, mount the second encrypted device,
+and replace the following placeholder with its verified mount point:
+
+```bash
+sudo install -d -m 0700 /run/media/neon/SECOND-ENCRYPTED-DISK/backup-disk-recovery
+sudo cryptsetup luksHeaderBackup "$backup_partition" --header-backup-file /run/media/neon/SECOND-ENCRYPTED-DISK/backup-disk-recovery/ARCH-BACKUP-LUKS2-header.img
+sudo chmod 0600 /run/media/neon/SECOND-ENCRYPTED-DISK/backup-disk-recovery/ARCH-BACKUP-LUKS2-header.img
+sudo cryptsetup luksUUID "$backup_partition"
+sudo cryptsetup luksUUID /run/media/neon/SECOND-ENCRYPTED-DISK/backup-disk-recovery/ARCH-BACKUP-LUKS2-header.img
+```
+
+The two UUIDs must match. Do not store the only copy of this header inside the
+LUKS container whose header it is meant to recover. Refresh it after changing
+the external disk's keyslots or tokens, and never run `luksHeaderRestore` as a
+test.
+
 The second copy does not need to duplicate the full Restic repository on day
 one, but truly irreplaceable user data still needs an off-site copy. A later
 chapter or handbook guide will compare a second Restic disk, SFTP/NAS, and
 supported object-storage backends before automating uploads.
+
+## Close and disconnect the backup disk safely
+
+Finish every backup session by checking that no Restic command or file-manager
+operation is still using the disk. Flush pending writes, unmount the ext4
+mapping, lock the LUKS partition and finally power off the physical USB disk:
+
+```bash
+sync
+udisksctl unmount -b /dev/mapper/luks-REPLACE_WITH_THE_EXACT_UUID
+udisksctl lock -b "$backup_partition"
+udisksctl power-off -b "$(readlink -f "$backup_disk")"
+```
+
+Use the exact mapping reported by `lsblk`, not the literal placeholder. The
+unmount and lock operations must succeed before unplugging the cable. If either
+reports that the device is busy, identify and close the process instead of
+forcing an unmount:
+
+```bash
+sudo lsof +f -- /run/media/neon/ARCH-BACKUP
+```
+
+Keeping the disk disconnected between backup sessions reduces exposure to
+accidental deletion, malware and operator error. It does not replace the second
+physical copy.
 
 ## Prepare the Arch installation medium
 
@@ -431,6 +697,10 @@ it was temporarily disabled. Confirm the normal signed UKI still boots.
 ## Completion checklist
 
 - [ ] External storage was identified through `lsblk` and `findmnt`.
+- [ ] Any pre-existing NTFS data was copied elsewhere and verified before the dedicated disk was erased.
+- [ ] The external disk uses GPT, LUKS2 and ext4 with the reviewed labels.
+- [ ] The mounted ext4 root is owned by `neon:neon`, mode `0700`, and is not configured for automatic unlocking or mounting.
+- [ ] The external disk's LUKS2 header exists on a second encrypted device and its UUID matches.
 - [ ] The LUKS header backup exists and its UUID matches the live container.
 - [ ] `/var/lib/sbctl` and EFI variable exports exist in the offline bundle.
 - [ ] Every recovery-bundle checksum verifies.
@@ -442,11 +712,17 @@ it was temporarily disabled. Confirm the normal signed UKI still boots.
 - [ ] The Arch ISO can unlock LUKS, activate LVM, mount all filesystems, and enter the chroot.
 - [ ] The rehearsal made no writes to LUKS headers or Secure Boot keys.
 - [ ] The installed system still boots normally with Secure Boot enabled.
+- [ ] The backup disk can be unmounted, locked and powered off cleanly.
 
 ## Sources
 
 - [cryptsetup header backup manual](https://man.archlinux.org/man/cryptsetup-luksHeaderBackup.8.en)
+- [cryptsetup LUKS format manual](https://man.archlinux.org/man/cryptsetup-luksFormat.8.en)
 - [cryptsetup manual](https://man.archlinux.org/man/cryptsetup.8.en)
+- [fdisk manual](https://man.archlinux.org/man/fdisk.8.en)
+- [wipefs manual](https://man.archlinux.org/man/wipefs.8.en)
+- [mkfs.ext4 manual](https://man.archlinux.org/man/mkfs.ext4.8.en)
+- [udisksctl manual](https://man.archlinux.org/man/udisksctl.1.en)
 - [Restic documentation](https://restic.readthedocs.io/en/latest/)
 - [Restic package](https://archlinux.org/packages/extra/x86_64/restic/)
 - [sbctl upstream](https://github.com/Foxboron/sbctl)
