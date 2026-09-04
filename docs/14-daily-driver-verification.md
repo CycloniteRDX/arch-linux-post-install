@@ -407,8 +407,8 @@ Open representative files from Nautilus and from Kitty with `xdg-open`:
 - `.ics` file in GNOME Calendar;
 - Writer, Calc and Impress documents in LibreOffice Still.
 
-Confirm Code - OSS, Micro, Vim, Git and GitHub CLI start, while remembering that
-their full development configuration remains handbook work.
+Confirm Micro, Vim, Git and GitHub CLI start, while remembering that their full
+development configuration remains handbook work.
 
 Test one application that stores a disposable secret through GNOME Keyring,
 log out and back in, confirm retrieval, then delete the test secret through the

@@ -18,16 +18,16 @@ This chapter:
 - installs GNOME Calculator, GNOME Calendar, and the LibreOffice maintenance
   branch;
 - installs English and Spanish spell-checking dictionaries;
-- adds Code - OSS, Vim, and GitHub CLI as the initial development tools;
+- adds Vim and GitHub CLI as the initial development tools;
 - deploys a reviewed `mimeapps.list` from `niri-dotfiles`;
 - verifies the applications without adding a launcher, theme, online account,
   or system daemon.
 
 It does not install an email client, cloud client, password-manager UI, AUR
-helper, Microsoft Visual Studio Code build, full programming-language
-toolchain, game platform, image editor, or media-library manager. Calendar
-account synchronization is also deferred. Those remain conditional choices
-rather than silent additions to the workstation.
+helper, VS Code-family editor, full programming-language toolchain, game
+platform, image editor, or media-library manager. Calendar account
+synchronization is also deferred. Those remain conditional choices rather
+than silent additions to the workstation.
 
 ## Prerequisites
 
@@ -51,14 +51,13 @@ tests in this chapter run inside Kitty under Niri, not from a bare TTY.
 | File manager | Nautilus | Reuses the existing GVfs, UDisks, XDG-directory, portal, and GNOME integration. |
 | PDF and document viewer | Papers | Current GNOME document viewer with PDF support and its own thumbnailer. |
 | Image viewer | Loupe | Focused GTK 4 image viewer that fits the selected GNOME application stack. |
-| Graphical text editor | GNOME Text Editor | Simple editor for ordinary text; it does not replace Micro, Vim, or Code. |
+| Graphical text editor | GNOME Text Editor | Simple editor for ordinary text; it does not replace Micro or Vim. |
 | Audio and video player | Celluloid | Mature GTK frontend for `mpv` without introducing a media-library service. |
 | Archive interface | File Roller | Adds a graphical archive manager and a Nautilus extension over the chapter 08 tools. |
 | Video thumbnails | ffmpegthumbnailer | Supplies previews for common local video files in the file manager. |
 | Office suite | LibreOffice Still | Maintenance branch selected for a reliability-first daily driver. |
 | Calculator | GNOME Calculator | Complete desktop calculator without a larger desktop-shell dependency. |
 | Calendar | GNOME Calendar | Local calendar that fits the GTK stack; remote-account synchronization remains unconfigured. |
-| Development editor | Code - OSS | Official-repository open-source VS Code build. |
 | Terminal editors | Micro and Vim | Micro remains the convenient editor; Vim is present for the later learning guide. |
 | GitHub client | GitHub CLI | Complements the existing Git and OpenSSH clients without enabling a daemon. |
 
@@ -121,7 +120,6 @@ sudo pacman -Syu \
     md4c \
     hunspell-en_us \
     hunspell-es_es \
-    code \
     vim \
     github-cli
 ```
@@ -150,19 +148,6 @@ Resolve every reported file before proceeding.
 
 ## Understand the initial development boundary
 
-The `code` package in the official repositories is **Code - OSS**, not the
-Microsoft-branded Visual Studio Code binary. It launches with:
-
-```bash
-code
-```
-
-Its desktop entry is `code-oss.desktop`. Microsoft account integration and
-the Microsoft extension Marketplace are not assumed by this runbook. Do not
-add unofficial Marketplace endpoints, install an AUR binary, or replace the
-package merely to make a copied extension command work. The handbook will
-compare those choices before the development environment is expanded.
-
 Vim is installed without plugins or a user configuration. Micro remains
 available, and GNOME Text Editor handles ordinary graphical text files. Their
 roles can coexist:
@@ -170,9 +155,12 @@ roles can coexist:
 ```bash
 micro --version
 vim --version | head -n 3
-code --version
 gh --version
 ```
+
+No VS Code-family editor is installed in this chapter. Comparing the available
+builds and installing the selected option through a reviewed AUR workflow
+belongs in a later handbook chapter.
 
 Installing GitHub CLI does not authenticate it. Do not copy another machine's
 `~/.config/gh/hosts.yml`, paste a token into the repository, or enable SSH
@@ -214,7 +202,7 @@ chapter 02 AUR policy still applies.
 Confirm that every canonical command resolves:
 
 ```bash
-command -v firefox nautilus papers loupe gnome-text-editor celluloid file-roller ffmpegthumbnailer gnome-calculator gnome-calendar libreoffice code vim gh
+command -v firefox nautilus papers loupe gnome-text-editor celluloid file-roller ffmpegthumbnailer gnome-calculator gnome-calendar libreoffice vim gh
 ```
 
 Every name must print one executable path. Confirm that the desktop files used
@@ -232,8 +220,7 @@ ls -l \
     /usr/share/applications/org.gnome.Calendar.desktop \
     /usr/share/applications/libreoffice-writer.desktop \
     /usr/share/applications/libreoffice-calc.desktop \
-    /usr/share/applications/libreoffice-impress.desktop \
-    /usr/share/applications/code-oss.desktop
+    /usr/share/applications/libreoffice-impress.desktop
 ```
 
 All paths must exist. These desktop-file IDs, not the display names visible in
@@ -257,7 +244,6 @@ pacman -Q \
     md4c \
     hunspell-en_us \
     hunspell-es_es \
-    code \
     vim \
     github-cli
 ```
@@ -445,7 +431,6 @@ file-roller
 gnome-calculator
 gnome-calendar
 libreoffice --writer
-code
 ```
 
 Use representative, non-sensitive local files to test the viewers:
@@ -456,9 +441,7 @@ Use representative, non-sensitive local files to test the viewers:
 - open a ZIP archive in File Roller and inspect it before extracting;
 - create one disposable local event in GNOME Calendar, close the application,
   reopen it, and confirm that the event remains;
-- create a disposable Writer document, close it, and reopen it;
-- open a small existing Git repository in Code - OSS without installing an
-  extension bundle yet.
+- create a disposable Writer document, close it, and reopen it.
 
 The applications should appear in the Niri overview even though no launcher
 has been installed. Do not add temporary Niri key bindings for every program;
@@ -551,11 +534,11 @@ systemctl --user --failed --no-pager
 sudo ss -lntup
 ```
 
-The application packages require no new inbound firewall rule. Firefox, Code,
-and other clients make outbound connections while in use; that is different
-from enabling a listening server. The local calendar backend uses per-user
-D-Bus and does not require a listening network port. Investigate any new
-listener rather than opening a port for it.
+The application packages require no new inbound firewall rule. Firefox and
+other clients make outbound connections while in use; that is different from
+enabling a listening server. The local calendar backend uses per-user D-Bus
+and does not require a listening network port. Investigate any new listener
+rather than opening a port for it.
 
 Confirm that remote SSH login remains disabled:
 
@@ -587,7 +570,7 @@ Install these only after a real requirement is identified:
 | Raster image editing | GIMP | Loupe already covers viewing; an editor adds a different workflow and configuration surface. |
 | Email client | Thunderbird | No account or local-mail policy has been selected. |
 | Dedicated music library | A maintained music player | Celluloid handles local playback; library indexing and metadata policy remain undecided. |
-| Microsoft-branded VS Code | Upstream or AUR package | It leaves the official-repository-only baseline and changes telemetry, Marketplace, and update decisions. |
+| VS Code-compatible IDE | Select after comparing the available builds | The choice and installation belong in the handbook's future AUR chapter. |
 | Proprietary media codecs or DRM extras | Application-specific component | Install only for a demonstrated format or service requirement. |
 
 When one becomes necessary, document its source, update mechanism, secrets,
@@ -667,8 +650,7 @@ in the same reviewed change.
 - [ ] US English and Spanish spell checking are available.
 - [ ] GNOME Text Editor is the ordinary graphical text-file default.
 - [ ] Micro and unconfigured Vim remain available in Kitty.
-- [ ] Code - OSS and GitHub CLI run without copying credentials or enabling a
-      server.
+- [ ] GitHub CLI runs without copying credentials or enabling a server.
 - [ ] Optional Python or package-building tools were installed only if this
       machine needs them.
 - [ ] `~/.config/mimeapps.list` resolves to the reviewed Stow package.
@@ -699,7 +681,6 @@ in the same reviewed change.
 - [Arch packages: Evolution Data Server](https://archlinux.org/packages/extra/x86_64/evolution-data-server/)
 - [Arch packages: LibreOffice Still](https://archlinux.org/packages/extra/x86_64/libreoffice-still/)
 - [Arch packages: md4c file list](https://archlinux.org/packages/extra/x86_64/md4c/files/)
-- [Arch packages: Code - OSS](https://archlinux.org/packages/extra/x86_64/code/)
 - [Arch packages: GitHub CLI](https://archlinux.org/packages/extra/x86_64/github-cli/)
 
 ## Next step
