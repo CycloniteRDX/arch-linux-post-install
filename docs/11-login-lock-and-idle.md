@@ -88,14 +88,14 @@ configuration reviewed for this chapter:
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
 git fetch --prune --tags origin
-git switch --detach post-install-11-v1
+git switch --detach post-install-11-v2
 git describe --tags --exact-match
 git log -1 --oneline
 ```
 
-The last two commands must identify `post-install-11-v1` and commit `63daf48`.
-Detached HEAD is expected. Stop rather than switching over an unexplained local
-change.
+The exact tag must be `post-install-11-v2`. It is the corrected successor to
+the immutable `post-install-11-v1` checkpoint; detached HEAD is expected. Stop
+rather than switching over an unexplained local change.
 
 ## Stage 1 — prove the locker
 
@@ -110,7 +110,14 @@ Stop on a conflict; do not use `--adopt`. Inspect the resulting link:
 
 ```bash
 readlink -f ~/.config/swaylock/config
+grep -nE '^[[:space:]]*indicator[[:space:]]*$' ~/.config/swaylock/config
 ```
+
+The link must resolve inside the clone and the `grep` command must print
+nothing. swaylock interprets each configuration key as a long-option name. A
+standalone `indicator` key is invalid and ambiguous with the supported
+`indicator-*` options; the unlock indicator is already visible by default.
+`indicator-radius` and `indicator-thickness` remain valid.
 
 Lock manually from inside Niri:
 
@@ -280,8 +287,28 @@ session continues to work.
 
 ## Enable with a live recovery TTY
 
-Open `Ctrl+Alt+F3`, log in as `neon`, and leave that shell open. Return to Niri,
-save all work, and exit the compositor. From the authenticated recovery TTY:
+Perform the handoff in this exact order:
+
+1. Press `Ctrl+Alt+F3`, log in as `neon`, and leave that recovery shell open.
+2. Press `Ctrl+Alt+F1` to return to the still-running Niri session.
+3. Save all work, press `Super+Shift+E`, and confirm the Niri exit.
+4. When the original TTY1 shell reappears, do not start Niri again.
+5. Press `Ctrl+Alt+F3` and return to the already authenticated recovery shell.
+
+Confirm that the old compositor has actually ended:
+
+```bash
+pgrep -a niri
+loginctl list-sessions
+```
+
+`pgrep` must print nothing. The open TTY sessions may remain listed; the
+important point is that no Niri compositor is still running. Starting greetd
+while the original graphical session remains open can display tuigreet but a
+new login may fail because it would try to create a second Niri session for the
+same user.
+
+Only now enable and start greetd from TTY3:
 
 ```bash
 sudo systemctl enable greetd.service
@@ -302,10 +329,42 @@ systemctl --user is-active gnome-keyring-daemon.service
 busctl --user list | grep 'org.freedesktop.secrets'
 ```
 
-The keyring service must be active and the Secret Service bus name must be
-present without asking separately for the login-keyring password. If the
-keyring stays locked, return to the recovery TTY and inspect the greetd PAM
-lines before rebooting.
+Inspect the complete keyring-related sequence rather than treating every red
+line in `systemctl status` as a final failure:
+
+```bash
+sudo journalctl -b -u greetd.service --no-pager | grep -E 'user (greeter|neon)|gkr-pam'
+```
+
+The default tuigreet process first opens a technical session as the unprivileged
+`greeter` account. A `couldn't unlock the login keyring` message attached to
+that account is harmless: `greeter` is drawing the login interface and has no
+personal login keyring to unlock.
+
+For `neon`, the normal first-login sequence may contain `unable to locate
+daemon control file`, followed by `stashed password to try later in open
+session`, `session opened for user neon`, and finally `unlocked login keyring`.
+The early message means the per-user daemon did not exist during PAM's
+authentication phase; the session hook then starts it and consumes the saved
+password. The final unlock line, the active service, and the Secret Service bus
+name establish success.
+
+Repeat the disposable functional test from chapter 07 without entering a
+second keyring password:
+
+```bash
+printf '%s' 'temporary-test-secret' | secret-tool store \
+    --label='Arch post-install verification' \
+    project arch-post-install \
+    purpose verification
+secret-tool lookup project arch-post-install purpose verification
+secret-tool clear project arch-post-install purpose verification
+```
+
+The lookup must print `temporary-test-secret` and the clear operation must
+succeed. If `neon` never reaches `unlocked login keyring`, or the functional
+test asks unexpectedly for the keyring password, return to TTY3 and inspect the
+greetd PAM lines before rebooting.
 
 Then repeat:
 
@@ -366,6 +425,7 @@ make a greeter power menu work.
 - [greetd package](https://archlinux.org/packages/extra/x86_64/greetd/)
 - [greetd-tuigreet package](https://archlinux.org/packages/extra/x86_64/greetd-tuigreet/)
 - [ArchWiki: GNOME Keyring](https://wiki.archlinux.org/title/GNOME/Keyring)
+- [GNOME Keyring PAM module source](https://github.com/GNOME/gnome-keyring/blob/main/pam/gkr-pam-module.c)
 - [swayidle package](https://archlinux.org/packages/extra/x86_64/swayidle/)
 - [swaylock package](https://archlinux.org/packages/extra/x86_64/swaylock/)
 - [tuigreet upstream documentation](https://github.com/tuigreet/tuigreet)

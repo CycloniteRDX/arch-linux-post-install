@@ -25,7 +25,7 @@ Run these checks from Kitty:
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
 git fetch --prune --tags origin
-git switch --detach post-install-13-v1
+git switch --detach post-install-13-v2
 git describe --tags --exact-match
 git log -1 --oneline
 stow --simulate --verbose --no-folding --target="$HOME" niri autostart mimeapps waybar fuzzel mako swaylock
@@ -33,7 +33,9 @@ niri validate
 ```
 
 The Git status must be clean before switching. The checkpoint commands must
-identify `post-install-13-v1` and commit `4bcd8cd`; detached HEAD is expected.
+identify `post-install-13-v2`; detached HEAD is expected. This tag preserves
+the chapter 13 tree while correcting the invalid standalone swaylock
+`indicator` option found in the immutable `v1` checkpoint.
 Stow may report that existing links are already owned; it must not report a
 real conflict. The `wallpapers` package is not present yet and therefore is not
 included in this preview; chapter 15 introduces it.

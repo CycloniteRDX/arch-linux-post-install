@@ -29,7 +29,7 @@ From Kitty:
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
 git fetch --prune --tags origin
-git switch --detach post-install-15-v1
+git switch --detach post-install-15-v2
 git describe --tags --exact-match
 git log -1 --oneline
 niri validate --config niri/.config/niri/config.kdl
@@ -37,7 +37,9 @@ niri validate --config niri/.config/niri/config.kdl
 
 Stop if Git reports an unexpected local change before switching or Niri rejects
 the selected configuration. The checkpoint commands must identify
-`post-install-15-v1` and commit `0e66f44`; detached HEAD is expected.
+`post-install-15-v2`; detached HEAD is expected. This tag retains the visual
+foundation while correcting the invalid standalone swaylock `indicator`
+option found in the immutable `v1` checkpoint.
 
 ## Component policy
 
