@@ -136,6 +136,11 @@ backup_disk=/dev/disk/by-id/usb-REPLACE_WITH_THE_EXACT_WHOLE_DISK_ID
 backup_partition="${backup_disk}-part1"
 ```
 
+These shell variables are not persistent. Opening a new terminal, logging out,
+or rebooting discards them. Repeat both assignments and the checks below before
+continuing in a new shell; never reconstruct the target from a remembered
+kernel name such as `/dev/sda`.
+
 Resolve and inspect the selection without modifying it:
 
 ```bash
@@ -234,12 +239,37 @@ Type the explicit confirmation requested by `cryptsetup` and choose a long,
 unique passphrase. Store its recovery copy separately from this disk. Do not
 reuse either the laptop LUKS passphrase or the future Restic password.
 
+The desktop may display a password prompt as soon as udev detects the new LUKS
+container. This is expected removable-media behaviour. Cancel the prompt while
+following the manual preparation below. If the password was already entered,
+the desktop may have created a dm-crypt mapping automatically. Inspect the
+partition:
+
+```bash
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS "$backup_partition"
+```
+
+If a `crypt` child is present, close that automatic mapping before creating the
+manual mapping:
+
+```bash
+udisksctl lock -b "$backup_partition"
+```
+
+Run the `lsblk` command again and confirm that the `crypt` child has
+disappeared. Do not open the same LUKS container simultaneously under two
+different mapping names.
+
 Open the new container and create ext4 inside it:
 
 ```bash
 sudo cryptsetup open "$backup_partition" arch-backup
 sudo mkfs.ext4 -L ARCH-BACKUP /dev/mapper/arch-backup
 ```
+
+Creating the ext4 signature may trigger another graphical password prompt.
+Cancel it: `/dev/mapper/arch-backup` is already the active manual mapping and a
+second desktop unlock is neither required nor useful at this stage.
 
 Do not pass hand-chosen cipher, key-size, PBKDF, sector-size or ext4 tuning
 options. The current tools select hardware-aware and maintained defaults; this
@@ -267,29 +297,91 @@ is stored in ext4 and therefore remains correct when the disk is mounted again.
 
 ### Test desktop unlocking and mounting
 
-Unlock the LUKS partition through Nautilus, or from the terminal:
+The manual `arch-backup` mapping was closed above. The normal desktop path now
+has three separate objects:
+
+| Object | Example | Purpose |
+| --- | --- | --- |
+| Encrypted partition | `/dev/sda1` | Contains the LUKS2 container labelled `ARCH-BACKUP-LUKS` |
+| Unlocked mapping | `/dev/mapper/ARCH-BACKUP-LUKS` or `/dev/mapper/luks-...` | Exposes the decrypted ext4 block device |
+| Mount point | `/run/media/neon/ARCH-BACKUP` | Exposes the files through the directory tree |
+
+`/dev/dm-4`, if reported by UDisks, is another path to the unlocked block
+device. Its number is dynamic and it is not a mount point.
+
+Choose one unlock method. Either unlock the partition through Nautilus, or run:
 
 ```bash
 udisksctl unlock -b "$backup_partition"
-lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS "$(readlink -f "$backup_disk")"
 ```
 
-The output identifies a new dm-crypt child containing ext4 with label
-`ARCH-BACKUP`. If the desktop did not mount it automatically, use the exact
-`/dev/mapper/luks-...` path printed by `lsblk`:
+Do not run the terminal command if Nautilus already unlocked the partition.
+An `Unlocked /dev/sda1 as /dev/dm-4` result confirms that the decrypted block
+device exists; it does not identify a directory where files are mounted.
+`udisksctl unlock` creates the decrypted block device but does not itself
+guarantee that the ext4 filesystem is mounted. Inspect the partition and its
+new child directly; the whole-disk `backup_disk` variable is unnecessary for
+this check:
 
 ```bash
-udisksctl mount -b /dev/mapper/luks-REPLACE_WITH_THE_EXACT_UUID
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS "$backup_partition"
 ```
 
-It should now be mounted at `/run/media/neon/ARCH-BACKUP`. Verify the source,
-filesystem and ownership before creating any backup:
+A successful graphical unlock and mount resembles this shortened tree; mapper
+names and `/dev/dm-*` numbers may differ:
+
+```text
+NAME                  PATH                                  TYPE  FSTYPE      LABEL
+sda1                  /dev/sda1                             part  crypto_LUKS ARCH-BACKUP-LUKS
+└─ARCH-BACKUP-LUKS    /dev/mapper/ARCH-BACKUP-LUKS         crypt ext4        ARCH-BACKUP
+```
+
+The second line must also show `/run/media/neon/ARCH-BACKUP` under
+`MOUNTPOINTS` when mounting has completed.
+
+The child with `TYPE=crypt`, `FSTYPE=ext4`, and `LABEL=ARCH-BACKUP` is the
+unlocked mapping. UDisks may name it from the LUKS label, such as
+`/dev/mapper/ARCH-BACKUP-LUKS`, or from the LUKS UUID, such as
+`/dev/mapper/luks-...`; neither name should be assumed. Discover and validate
+the exact path:
 
 ```bash
-findmnt --target /run/media/neon/ARCH-BACKUP
-df -hT /run/media/neon/ARCH-BACKUP
-stat -c '%A %U:%G %n' /run/media/neon/ARCH-BACKUP
-sudo cryptsetup status luks-REPLACE_WITH_THE_EXACT_UUID
+backup_mapping="$(
+    lsblk -nrpo PATH,TYPE "$backup_partition" |
+    awk '$2 == "crypt" { print $1; exit }'
+)"
+test -b "$backup_mapping"
+printf 'Unlocked mapping: %s\n' "$backup_mapping"
+```
+
+If `MOUNTPOINTS` was empty in the preceding `lsblk` output, mount that exact
+mapping:
+
+```bash
+udisksctl mount -b "$backup_mapping"
+```
+
+Nautilus commonly performs both operations as one graphical action, whereas
+the terminal flow makes the unlock and mount operations explicit. Discover the
+actual mount point instead of inferring it from the mapping name:
+
+```bash
+backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET)"
+test -n "$backup_mount"
+printf 'Backup mount point: %s\n' "$backup_mount"
+```
+
+For this profile it should print `/run/media/neon/ARCH-BACKUP`. Verify the
+source, filesystem, mount options, ownership, and active LUKS mapping before
+creating any backup:
+
+```bash
+findmnt --target "$backup_mount"
+df -hT "$backup_mount"
+stat -c '%A %U:%G %n' "$backup_mount"
+backup_mapping_name="$(lsblk -dnro NAME "$backup_mapping")"
+test -n "$backup_mapping_name"
+sudo cryptsetup status "$backup_mapping_name"
 ```
 
 Required results are an external dm-crypt source, ext4, read-write mount
@@ -574,22 +666,44 @@ supported object-storage backends before automating uploads.
 
 Finish every backup session by checking that no Restic command or file-manager
 operation is still using the disk. Flush pending writes, unmount the ext4
-mapping, lock the LUKS partition and finally power off the physical USB disk:
+mapping, lock the LUKS partition and finally power off the physical USB disk.
+If this is a new shell, repeat the persistent `backup_disk` and
+`backup_partition` assignments from **Resolve one persistent device path**.
+Validate both before proceeding:
+
+```bash
+test -b "$backup_disk"
+test -b "$backup_partition"
+```
+
+Rediscover the current UDisks mapping instead of assuming that it retained the
+name used in an earlier session:
+
+```bash
+backup_mapping="$(
+    lsblk -nrpo PATH,TYPE "$backup_partition" |
+    awk '$2 == "crypt" { print $1; exit }'
+)"
+test -b "$backup_mapping"
+backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET)"
+test -n "$backup_mount"
+```
+
+Then close the complete stack in reverse order:
 
 ```bash
 sync
-udisksctl unmount -b /dev/mapper/luks-REPLACE_WITH_THE_EXACT_UUID
+udisksctl unmount -b "$backup_mapping"
 udisksctl lock -b "$backup_partition"
 udisksctl power-off -b "$(readlink -f "$backup_disk")"
 ```
 
-Use the exact mapping reported by `lsblk`, not the literal placeholder. The
-unmount and lock operations must succeed before unplugging the cable. If either
-reports that the device is busy, identify and close the process instead of
-forcing an unmount:
+The unmount and lock operations must succeed before unplugging the cable. If
+either reports that the device is busy, identify and close the process instead
+of forcing an unmount:
 
 ```bash
-sudo lsof +f -- /run/media/neon/ARCH-BACKUP
+sudo lsof +f -- "$backup_mount"
 ```
 
 Keeping the disk disconnected between backup sessions reduces exposure to
