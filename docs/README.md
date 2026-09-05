@@ -11,7 +11,8 @@ its established ownership, trust, storage, or recovery boundaries.
 
 That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
 post-baseline extension and passed hardware validation on 2026-09-04. Chapter
-17 is reviewed and awaits its first hardware validation.
+17 passed hardware validation on 2026-09-05. Chapter 18 is reviewed and awaits
+its first hardware validation.
 
 Only chapters that already exist are linked.
 
@@ -35,6 +36,7 @@ Only chapters that already exist are linked.
 | [15. Visual foundation](15-visual-foundation.md) | Niri and Kitty | Apply and verify the Midnight Circuit palette, project wallpaper, GTK dark preferences, Papirus icons, and Breeze cursor without replacing the modular desktop. |
 | [16. Reviewed AUR workflow](16-reviewed-aur-workflow.md) | Kitty | Install the official build toolchain, audit and build Paru manually, then establish separate review-first maintenance for foreign packages. |
 | [17. Qt 6 appearance integration](17-qt6-appearance-integration.md) | Niri and Kitty | Install qt6ct from the official repository, deploy the Midnight Circuit Qt 6 configuration, preserve portal dialogs, and verify native Wayland behavior without competing overrides. |
+| [18. Automatic session suspend](18-automatic-session-suspend.md) | Niri and Kitty | Extend the single swayidle lifecycle with battery-only suspend at 30 idle minutes, preserve inhibitors and lock readiness, and verify AC, battery, and resume behavior. |
 
 ## Why Niri is not the first command
 
@@ -52,8 +54,8 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, and 12 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, and 17 |
-| Power management and laptops | Chapter 06 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, and 18 |
+| Power management and laptops | Chapters 06, 11, and 18 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapter 06 |

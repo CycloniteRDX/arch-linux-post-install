@@ -16,8 +16,9 @@ AMD and frozen as `v1.0.0`. The 2026-09-04 result is
 `READY WITH FOLLOW-UPS`: the boot, storage, security, network, power, desktop,
 backup, and recovery baseline is ready for daily use. Chapter 16 adds an
 optional reviewed AUR workflow, hardware-validated on the same ThinkPad on
-2026-09-04. Chapter 17 adds the reviewed Qt 6 appearance procedure and awaits
-hardware validation. Automatic idle suspend, Plymouth, TPM2-bound unlock,
+2026-09-04. Chapter 17 adds the Qt 6 appearance procedure, hardware-validated
+on 2026-09-05. Chapter 18 adds the reviewed battery-only automatic session
+suspend procedure and awaits hardware validation. Plymouth, TPM2-bound unlock,
 advanced desktop polish, and per-host output overrides remain deliberate later
 work.
 

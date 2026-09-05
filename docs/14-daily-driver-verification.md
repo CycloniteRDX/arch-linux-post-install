@@ -25,9 +25,11 @@ The machine is **daily-driver ready** only when:
 - all four project repositories are clean and synchronized;
 - no secret or generated runtime state entered Git.
 
-Hibernation, TPM2 unlocking, Plymouth, automatic idle suspend, remote calendar
-synchronization, host-specific output tuning, and the later Qt 6 appearance
-extension are outside this frozen baseline. Their absence is not a failed test.
+The reviewed AUR workflow, Qt 6 appearance, and automatic idle suspend are
+post-baseline extensions with their own validation gates. Hibernation, TPM2
+unlocking, Plymouth, remote calendar synchronization, and host-specific output
+tuning also remain outside this frozen baseline. Their presence or absence does
+not change the historical `v1.0.0` result.
 
 ## Prepare the verification record
 

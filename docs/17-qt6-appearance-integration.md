@@ -33,6 +33,9 @@ to stack another global override.
 - The Niri portal services passed their earlier verification.
 - TTY3 remains available if the graphical session cannot be entered.
 
+This procedure passed its first hardware validation on the canonical ThinkPad
+on 2026-09-05.
+
 Run the chapter as `neon` from Kitty. First select the exact dotfiles
 checkpoint:
 
@@ -48,6 +51,16 @@ niri validate --config niri/.config/niri/config.kdl
 
 Stop on an unexpected local change, missing tag, or validation failure.
 Detached HEAD is intentional while reproducing the chapter checkpoint.
+
+`post-install-17-v1` is the tag **name** selected by `git switch`.
+`Post-install chapter 17 Qt 6 appearance` is its annotated **message**, not a
+second reference. Git reference names cannot contain spaces. Display both
+fields when checking the checkpoint:
+
+```bash
+git tag --list 'post-install-17-v1'
+git tag -n1 'post-install-17-v1'
+```
 
 ## Fix the ownership boundary
 

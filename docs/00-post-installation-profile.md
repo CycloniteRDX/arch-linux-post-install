@@ -192,6 +192,12 @@ Qt 6 appearance is owned by qt6ct after chapter 17. Niri exports only
 Qt 5, Kvantum, Plasma, `QT_STYLE_OVERRIDE`, and a global forced
 `QT_QPA_PLATFORM` are not part of the profile.
 
+After chapter 18, the existing swayidle process remains the only session-idle
+coordinator. It locks at five minutes, powers monitors off at ten, and calls a
+fail-closed helper at 30 minutes. That helper requests suspend only when
+UPower reports battery operation and tells systemd to honor active inhibitors.
+It does not create automatic suspend on AC or after the Niri session ends.
+
 ## Applications policy
 
 The completed system will include, at minimum:
