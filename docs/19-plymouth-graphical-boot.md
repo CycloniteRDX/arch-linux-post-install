@@ -30,7 +30,9 @@ and layered diagnosis behind this procedure.
 
 ## Status and prerequisites
 
-This chapter is reviewed and awaits hardware validation.
+This chapter passed hardware validation on the target ThinkPad T14 Gen 1 AMD
+on 2026-09-05. The normal BGRT presentation and independent textual fallback
+both work as designed.
 
 Before applying it:
 
@@ -572,6 +574,11 @@ ESP, or reinstall Arch for a presentation-layer failure.
 - [ ] A new encrypted recovery snapshot includes `cmdline-fallback` and all current boot sources.
 - [ ] TPM2 enrollment, custom themes, UKI bitmap, hibernation, and extra silent options remain absent.
 
+This complete sequence passed hardware validation on the target ThinkPad T14
+Gen 1 AMD on 2026-09-05. The official BGRT theme, graphical normal LUKS
+request, `Esc` diagnostics, signed UKIs, and independent textual fallback all
+behave as intended.
+
 ## Sources
 
 - [Arch package: Plymouth](https://archlinux.org/packages/extra/x86_64/plymouth/)
@@ -587,7 +594,6 @@ ESP, or reinstall Arch for a presentation-layer failure.
 
 ## Next step
 
-Hardware-validate this chapter before changing the boot trust or unlock model.
-Once normal and textual fallback boot are both stable, the next planned
-extension is TPM2-bound LUKS unlocking with the strong passphrase retained as
-the recovery credential.
+Continue with chapter 20 to add TPM2-bound LUKS unlocking only after preserving
+the working normal and textual fallback paths. The strong passphrase remains
+an independent credential throughout that extension.

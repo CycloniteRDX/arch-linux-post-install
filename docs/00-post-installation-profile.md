@@ -179,7 +179,11 @@ After that extension:
 - systemd-boot keeps its three-second menu and disabled editor;
 - `sd-encrypt`, not Plymouth, remains responsible for LUKS unlocking;
 - the official `bgrt` theme is the first baseline;
-- TPM2 unlock and custom boot artwork remain later, separate changes.
+- chapter 20 may add TPM2 unlock to the normal UKI only, with a unique PIN,
+  raw PCR 7, signed PCR 11, and independently tested manual credentials;
+- the fallback UKI keeps requiring the strong LUKS passphrase or generated
+  recovery key and never requests the TPM;
+- custom boot artwork remains a later, separate change.
 
 Plymouth does not install user configuration and creates no new dotfiles
 checkpoint.

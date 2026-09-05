@@ -532,12 +532,12 @@ Use exactly one outcome:
 | `NOT READY` | Any boot, storage, trust, backup, authentication, suspend, network, or recurring stability failure remains unresolved. |
 
 Current follow-ups that do not block `READY` include hardware validation of
-chapter 19 Plymouth, advanced modular-dotfiles polish, TPM2-bound unlock,
-calendar synchronization, a 48 Hz battery profile, and host-specific output
-overrides. They must not be smuggled into this verification as last-minute
-changes. The reviewed GTK, icon, cursor, palette, and wallpaper baseline is
-applied only after this readiness gate, in chapter 15; the validated Qt 6 and
-automatic-suspend extensions follow in chapters 17 and 18.
+chapter 20 TPM2-bound unlock, advanced modular-dotfiles polish, calendar
+synchronization, a 48 Hz battery profile, and host-specific output overrides.
+They must not be smuggled into this verification as last-minute changes. The
+reviewed GTK, icon, cursor, palette, and wallpaper baseline is applied only
+after this readiness gate, in chapter 15; the validated Qt 6,
+automatic-suspend, and Plymouth extensions follow in chapters 17 through 19.
 
 ## Final checklist
 

@@ -13,7 +13,8 @@ That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
 post-baseline extension and passed hardware validation on 2026-09-04. Chapter
 17 passed hardware validation on 2026-09-05. Chapter 18 passed hardware
 validation on 2026-09-05; its corrected dotfiles checkpoint is
-`post-install-18-v2`. Chapter 19 is reviewed and awaits hardware validation.
+`post-install-18-v2`. Chapter 19 passed hardware validation on 2026-09-05.
+Chapter 20 is reviewed and awaits hardware validation.
 
 Only chapters that already exist are linked.
 
@@ -39,6 +40,7 @@ Only chapters that already exist are linked.
 | [17. Qt 6 appearance integration](17-qt6-appearance-integration.md) | Niri and Kitty | Install qt6ct from the official repository, deploy the Midnight Circuit Qt 6 configuration, preserve portal dialogs, and verify native Wayland behavior without competing overrides. |
 | [18. Automatic session suspend](18-automatic-session-suspend.md) | Niri and Kitty | Extend the single swayidle lifecycle with battery-only suspend at 30 idle minutes, preserve inhibitors and lock readiness, and verify AC, battery, and resume behavior. |
 | [19. Plymouth graphical boot](19-plymouth-graphical-boot.md) | Kitty, boot menu, and TTY | Add a graphical LUKS presentation to the normal signed UKI while preserving a broad, verbose fallback UKI independent of Plymouth. |
+| [20. TPM2-bound LUKS unlock](20-tpm2-bound-luks-unlock.md) | Kitty, boot menu, and TTY | Add a PIN-authorized TPM2 route bound to Secure Boot and signed UKI measurements while retaining passphrase, recovery-key, fallback-UKI, and ISO recovery. |
 
 ## Why Niri is not the first command
 
@@ -55,7 +57,7 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | ArchWiki area | Primary destination |
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
-| Booting and system maintenance | Chapters 01, 02, 03, 12, and 19 |
+| Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
 | Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, and 19 |
 | Power management and laptops | Chapters 06, 11, and 18 |
 | Multimedia | Chapter 07 |

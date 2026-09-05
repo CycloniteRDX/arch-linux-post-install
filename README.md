@@ -19,10 +19,12 @@ optional reviewed AUR workflow, hardware-validated on the same ThinkPad on
 2026-09-04. Chapter 17 adds the Qt 6 appearance procedure, hardware-validated
 on 2026-09-05. Chapter 18 adds the battery-only automatic session suspend
 procedure, hardware-validated on 2026-09-05 after correcting the helper's
-executable bit in `post-install-18-v2`. Chapter 19 adds the reviewed Plymouth
-procedure with a graphical normal UKI and independent textual fallback; it
-awaits hardware validation. TPM2-bound unlock, advanced desktop polish, and
-per-host output overrides remain deliberate later work.
+executable bit in `post-install-18-v2`. Chapter 19 adds the Plymouth procedure
+with a graphical normal UKI and independent textual fallback,
+hardware-validated on 2026-09-05. Chapter 20 adds the reviewed TPM2-bound LUKS
+unlock procedure with a unique PIN, signed PCR 11 policy, and independent
+manual credentials; it awaits hardware validation. Advanced desktop polish
+and per-host output overrides remain deliberate later work.
 
 ## Starting point
 
@@ -77,6 +79,7 @@ This repository owns system-wide integration after the first boot:
 - The portable GTK and Qt 6 appearance, icon, cursor, palette, and wallpaper
   foundation.
 - Graphical early-boot presentation with an intentionally textual recovery UKI.
+- TPM2-bound normal unlock with a PIN and independent manual recovery paths.
 - Backup, recovery, and final daily-driver verification.
 
 ## Repository boundaries
