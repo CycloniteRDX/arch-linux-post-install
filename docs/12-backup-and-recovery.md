@@ -495,6 +495,12 @@ sudo cp --archive /etc/fstab /etc/kernel/cmdline /etc/mkinitcpio.conf /etc/mkini
 sudo cp --archive /boot/loader /run/media/neon/ARCH-BACKUP/rogue-thinkpad-recovery/system-config/
 ```
 
+The initial validated baseline has no separate fallback command-line source.
+If a later chapter creates `/etc/kernel/cmdline-fallback`, do not rerun the
+commands above against this historical directory. Follow that chapter's
+procedure to create a separately named recovery snapshot containing the new
+source and the updated boot configuration.
+
 If `/etc/crypttab.initramfs` exists, copy it separately:
 
 ```bash

@@ -164,6 +164,26 @@ The first manual session must prove that Kitty opens, input works, the correct
 display mode is active, applications can exit, and the user can return to TTY.
 No greeter is enabled until that path is reliable.
 
+## Early-boot presentation policy
+
+The runbook and the frozen `v1.0.0` baseline remain deliberately textual so a
+new installation exposes its real LUKS, initramfs, and service boundaries.
+Chapter 19 may add Plymouth only after both signed UKIs and the recovery path
+are proven.
+
+After that extension:
+
+- the normal UKI includes Plymouth and embeds `quiet splash`;
+- the fallback UKI omits Plymouth and both presentation parameters;
+- both retain the same LUKS UUID, discard, zswap, root, and read-write policy;
+- systemd-boot keeps its three-second menu and disabled editor;
+- `sd-encrypt`, not Plymouth, remains responsible for LUKS unlocking;
+- the official `bgrt` theme is the first baseline;
+- TPM2 unlock and custom boot artwork remain later, separate changes.
+
+Plymouth does not install user configuration and creates no new dotfiles
+checkpoint.
+
 ## Desktop-component policy
 
 The final workstation will provide the functions expected from a complete

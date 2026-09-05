@@ -380,9 +380,10 @@ Only after all tests succeed should you reboot once:
 systemctl reboot
 ```
 
-The expected sequence is firmware, systemd-boot, LUKS password, boot, tuigreet,
-authentication, and Niri. Plymouth and graphical LUKS presentation remain a
-later boot-polish project.
+At this chapter's checkpoint, the expected sequence is firmware, systemd-boot,
+textual LUKS password, boot, tuigreet, authentication, and Niri. Do not add
+Plymouth here: chapter 19 introduces the graphical LUKS presentation only
+after both this session lifecycle and the signed fallback UKI are proven.
 
 ## Recovery
 
