@@ -26,7 +26,11 @@ profile, or a passwordless privilege rule.
 
 ## Status and prerequisites
 
-This chapter is reviewed and awaits hardware validation.
+This chapter passed hardware validation on the target ThinkPad T14 Gen 1 AMD
+on 2026-09-05. Validation found one packaging defect in the original
+`post-install-18-v1` dotfiles checkpoint: the helper content was correct, but
+Git had not recorded its executable bit. `post-install-18-v2` is the corrected
+checkpoint and the only chapter 18 tag to deploy.
 
 Before applying it:
 
@@ -49,7 +53,7 @@ The dotfiles change must already be committed and tagged. Select it exactly:
 cd ~/Projects/CycloniteRDX/niri-dotfiles
 git status --short --branch
 git fetch --prune --tags origin
-git switch --detach post-install-18-v1
+git switch --detach post-install-18-v2
 git describe --tags --exact-match
 git log -1 --oneline
 ```
@@ -61,17 +65,21 @@ The tag reference and its annotation are different fields. The command used
 when publishing this checkpoint is:
 
 ```bash
-git tag -a post-install-18-v1 \
-  -m "Post-install chapter 18 automatic session suspend"
+git tag -a post-install-18-v2 \
+  -m "Post-install chapter 18 automatic session suspend (executable fix)"
 ```
 
-`post-install-18-v1` is the name used by `git switch`; the quoted text is the
+`post-install-18-v2` is the name used by `git switch`; the quoted text is the
 human-readable message. Verify both with:
 
 ```bash
-git tag --list 'post-install-18-v1'
-git tag -n1 'post-install-18-v1'
+git tag --list 'post-install-18-v2'
+git tag -n1 'post-install-18-v2'
 ```
+
+Do not move or delete `post-install-18-v1`: it remains an immutable record of
+the packaging error. The corrected tag must point at a new commit whose index
+stores the helper as mode `100755`.
 
 ## Preserve the ownership model
 
@@ -185,10 +193,26 @@ Inspect and validate both files before deployment:
 ```bash
 sed -n '50,85p' niri/.config/niri/config.kdl
 sed -n '1,220p' scripts/.local/bin/idle-suspend
+git ls-files --stage scripts/.local/bin/idle-suspend
 test -x scripts/.local/bin/idle-suspend
 sh -n scripts/.local/bin/idle-suspend
 niri validate --config niri/.config/niri/config.kdl
 ```
+
+The first field printed by `git ls-files` must be `100755`. `test -x` proves
+the current Arch working tree is executable; it does not by itself prove that
+future clones will receive the permission. When preparing the correction from
+Windows, stage the mode explicitly:
+
+```bash
+git add --chmod=+x scripts/.local/bin/idle-suspend
+git diff --cached --summary
+git ls-files --stage scripts/.local/bin/idle-suspend
+```
+
+The staged summary must report `mode change 100644 => 100755`, and the index
+query must begin with `100755`. Extracting a ZIP on NTFS is not authoritative
+for Unix executable permissions; the Git index is.
 
 No package installation or system file modification is required. `busctl`,
 `systemctl`, and `systemd-cat` come from the already installed systemd package;
@@ -439,11 +463,11 @@ bypass to solve an automatic-timer problem.
 ## Completion checklist
 
 - [ ] Chapter 17 is recorded as hardware-validated.
-- [ ] `post-install-18-v1` is the selected exact dotfiles tag.
+- [ ] `post-install-18-v2` is the selected exact dotfiles tag.
 - [ ] swayidle, swaylock, UPower, and systemd packages are installed and healthy.
 - [ ] One swayidle process owns the 300-, 600-, and 1800-second progression.
 - [ ] Merged logind policy has no competing automatic idle action.
-- [ ] The tracked helper is executable, passes `sh -n`, and is Stow-managed.
+- [ ] Git tracks the helper as `100755`; it passes `test -x` and `sh -n` and is Stow-managed.
 - [ ] UPower reports `b false` on AC and `b true` on battery.
 - [ ] Dry run skips on AC and reaches the battery decision without sleeping.
 - [ ] A blocking sleep inhibitor prevents the helper from suspending.

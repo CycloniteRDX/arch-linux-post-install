@@ -17,10 +17,10 @@ AMD and frozen as `v1.0.0`. The 2026-09-04 result is
 backup, and recovery baseline is ready for daily use. Chapter 16 adds an
 optional reviewed AUR workflow, hardware-validated on the same ThinkPad on
 2026-09-04. Chapter 17 adds the Qt 6 appearance procedure, hardware-validated
-on 2026-09-05. Chapter 18 adds the reviewed battery-only automatic session
-suspend procedure and awaits hardware validation. Plymouth, TPM2-bound unlock,
-advanced desktop polish, and per-host output overrides remain deliberate later
-work.
+on 2026-09-05. Chapter 18 adds the battery-only automatic session suspend
+procedure, hardware-validated on 2026-09-05 after correcting the helper's
+executable bit in `post-install-18-v2`. Plymouth, TPM2-bound unlock, advanced
+desktop polish, and per-host output overrides remain deliberate later work.
 
 ## Starting point
 

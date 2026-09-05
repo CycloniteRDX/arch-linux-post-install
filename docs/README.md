@@ -11,8 +11,9 @@ its established ownership, trust, storage, or recovery boundaries.
 
 That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
 post-baseline extension and passed hardware validation on 2026-09-04. Chapter
-17 passed hardware validation on 2026-09-05. Chapter 18 is reviewed and awaits
-its first hardware validation.
+17 passed hardware validation on 2026-09-05. Chapter 18 passed hardware
+validation on 2026-09-05; its corrected dotfiles checkpoint is
+`post-install-18-v2`.
 
 Only chapters that already exist are linked.
 
