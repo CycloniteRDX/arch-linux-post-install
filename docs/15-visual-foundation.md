@@ -13,8 +13,8 @@ Noto Sans Mono and does not require a Nerd Font.
 
 This chapter does not replace Mako with SwayNotificationCenter, add Eww, theme
 Qt independently, change the selected tuigreet login path, or change lock and
-idle policy.
-Those are separate, reversible decisions.
+idle policy. Those are separate, reversible decisions; chapter 17 later owns
+the Qt 6 integration.
 
 ## Prerequisites
 
@@ -57,8 +57,9 @@ option found in the immutable `v1` checkpoint.
 libadwaita. The GTK 4 settings file therefore requests dark presentation,
 icons, fonts, and cursor but deliberately omits `gtk-theme-name`.
 
-Qt-specific theming remains deferred. Do not install `qt5ct`, `qt6ct`, Kvantum,
-or an environment override merely to make one application resemble GTK.
+Qt-specific theming is deliberately absent from this chapter. Chapter 17 adds
+one reviewed Qt 6 path; do not pre-empt it here with `qt5ct`, `qt6ct`, Kvantum,
+or an environment override.
 
 ## Install the official packages
 

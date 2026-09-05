@@ -16,7 +16,8 @@ AMD and frozen as `v1.0.0`. The 2026-09-04 result is
 `READY WITH FOLLOW-UPS`: the boot, storage, security, network, power, desktop,
 backup, and recovery baseline is ready for daily use. Chapter 16 adds an
 optional reviewed AUR workflow, hardware-validated on the same ThinkPad on
-2026-09-04. Qt theming, automatic idle suspend, Plymouth, TPM2-bound unlock,
+2026-09-04. Chapter 17 adds the reviewed Qt 6 appearance procedure and awaits
+hardware validation. Automatic idle suspend, Plymouth, TPM2-bound unlock,
 advanced desktop polish, and per-host output overrides remain deliberate later
 work.
 
@@ -70,7 +71,8 @@ This repository owns system-wide integration after the first boot:
 - Daily applications and their required system packages.
 - Niri, Kitty, greetd, and the packages underlying the selected desktop
   components.
-- The portable GTK, icon, cursor, palette, and wallpaper foundation.
+- The portable GTK and Qt 6 appearance, icon, cursor, palette, and wallpaper
+  foundation.
 - Backup, recovery, and final daily-driver verification.
 
 ## Repository boundaries

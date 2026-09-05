@@ -10,7 +10,8 @@ chapters do not invalidate this daily-driver baseline unless they modify one of
 its established ownership, trust, storage, or recovery boundaries.
 
 That validated baseline is frozen as `v1.0.0`. Chapter 16 is the first
-post-baseline extension and passed hardware validation on 2026-09-04.
+post-baseline extension and passed hardware validation on 2026-09-04. Chapter
+17 is reviewed and awaits its first hardware validation.
 
 Only chapters that already exist are linked.
 
@@ -33,6 +34,7 @@ Only chapters that already exist are linked.
 | [14. Daily-driver verification](14-daily-driver-verification.md) | TTY, Niri, and controlled reboots | Verify the complete trust, storage, update, network, hardware, desktop, portal, backup, recovery, and observation lifecycle before classifying the workstation. |
 | [15. Visual foundation](15-visual-foundation.md) | Niri and Kitty | Apply and verify the Midnight Circuit palette, project wallpaper, GTK dark preferences, Papirus icons, and Breeze cursor without replacing the modular desktop. |
 | [16. Reviewed AUR workflow](16-reviewed-aur-workflow.md) | Kitty | Install the official build toolchain, audit and build Paru manually, then establish separate review-first maintenance for foreign packages. |
+| [17. Qt 6 appearance integration](17-qt6-appearance-integration.md) | Niri and Kitty | Install qt6ct from the official repository, deploy the Midnight Circuit Qt 6 configuration, preserve portal dialogs, and verify native Wayland behavior without competing overrides. |
 
 ## Why Niri is not the first command
 
@@ -50,14 +52,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, and 12 |
-| Graphical user interface | Chapters 05, 10, 11, 13, and 15 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, and 17 |
 | Power management and laptops | Chapter 06 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapter 06 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, and 15 |
+| Appearance | Chapters 08, 10, 15, and 17 |
 | Console improvements | Chapters 02 and 08 |
 | Applications | Chapter 09 |
 

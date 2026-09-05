@@ -149,6 +149,7 @@ hardening control regardless of usability.
 | Privilege authorization | Polkit plus one graphical authentication agent |
 | Login start | Manual `niri-session` first; greetd only after validation |
 | Desktop shell | Individually selected components; no complete-shell dependency |
+| Qt 6 appearance | qt6ct with Fusion, Midnight Circuit, Papirus Dark, Noto fonts, and portal dialogs |
 
 Niri and Kitty are installed after the initial TTY maintenance, storage, and
 security baseline. Their system packages belong here; the actual Niri and Kitty
@@ -185,6 +186,11 @@ Component selection must consider maturity, maintenance, official-repository
 availability, native Wayland behavior, dependency size, configuration quality,
 security implications, and ease of recovery. A visually attractive result is a
 goal, but it does not override reliability on a daily driver.
+
+Qt 6 appearance is owned by qt6ct after chapter 17. Niri exports only
+`QT_QPA_PLATFORMTHEME=qt6ct`; Qt chooses its platform backend automatically.
+Qt 5, Kvantum, Plasma, `QT_STYLE_OVERRIDE`, and a global forced
+`QT_QPA_PLATFORM` are not part of the profile.
 
 ## Applications policy
 
