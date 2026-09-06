@@ -24,8 +24,9 @@ with a graphical normal UKI and independent textual fallback,
 hardware-validated on 2026-09-05. Chapter 20 adds the reviewed TPM2-bound LUKS
 unlock procedure with a unique PIN, signed PCR 11 policy, and independent
 manual credentials, hardware-validated on 2026-09-06. Advanced desktop polish
-now begins in chapter 21 with a reviewed Waybar refinement that awaits hardware
-validation. Per-host output overrides remain deliberate later work.
+now begins in chapter 21 with a reviewed compact Waybar refinement and its two
+official icon-font dependencies; it awaits hardware validation. Per-host
+output overrides remain deliberate later work.
 
 ## Starting point
 

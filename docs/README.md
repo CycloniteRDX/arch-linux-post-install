@@ -43,7 +43,7 @@ Only chapters that already exist are linked.
 | [18. Automatic session suspend](18-automatic-session-suspend.md) | Niri and Kitty | Extend the single swayidle lifecycle with battery-only suspend at 30 idle minutes, preserve inhibitors and lock readiness, and verify AC, battery, and resume behavior. |
 | [19. Plymouth graphical boot](19-plymouth-graphical-boot.md) | Kitty, boot menu, and TTY | Add a graphical LUKS presentation to the normal signed UKI while preserving a broad, verbose fallback UKI independent of Plymouth. |
 | [20. TPM2-bound LUKS unlock](20-tpm2-bound-luks-unlock.md) | Kitty, boot menu, and TTY | Add a PIN-authorized TPM2 route bound to Secure Boot and signed UKI measurements while retaining passphrase, recovery-key, fallback-UKI, and ISO recovery. |
-| [21. Waybar visual refinement](21-waybar-visual-refinement.md) | Niri and Kitty | Record the pre-personalization checkpoint, refine the existing Waybar into three Midnight Circuit islands, preserve every owner, and validate all status and interaction paths before tagging the new dotfiles state. |
+| [21. Waybar visual refinement](21-waybar-visual-refinement.md) | Niri and Kitty | Record the pre-personalization checkpoint, install the two selected icon fonts, deploy the compact full-width Midnight Circuit bar, and validate every status and interaction path before tagging the new dotfiles state. |
 
 ## Why Niri is not the first command
 
