@@ -23,7 +23,8 @@ executable bit in `post-install-18-v2`. Chapter 19 adds the Plymouth procedure
 with a graphical normal UKI and independent textual fallback,
 hardware-validated on 2026-09-05. Chapter 20 adds the reviewed TPM2-bound LUKS
 unlock procedure with a unique PIN, signed PCR 11 policy, and independent
-manual credentials; it awaits hardware validation. Advanced desktop polish
+manual credentials; its hardware validation is in progress as of 2026-09-06.
+Advanced desktop polish
 and per-host output overrides remain deliberate later work.
 
 ## Starting point

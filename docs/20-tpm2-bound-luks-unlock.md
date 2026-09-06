@@ -29,7 +29,11 @@ behavior, alternatives, and recovery boundaries behind this procedure.
 
 ## Status and safety gate
 
-This chapter is reviewed and awaits hardware validation.
+This chapter is under hardware validation. The 2026-09-06 validation pass
+confirmed that the TPM identification probe needs elevated device access on
+this ThinkPad and exposed two version-specific command corrections documented
+below. Do not mark the chapter complete until the normal PIN path, textual
+fallback, signed-PCR update test, and recovery path all pass.
 
 Before applying it:
 
@@ -150,7 +154,7 @@ Use systemd's read-only TPM probes:
 
 ```bash
 systemd-analyze has-tpm2
-systemd-analyze identify-tpm2
+sudo systemd-analyze identify-tpm2
 systemd-cryptenroll --tpm2-device=list
 systemd-analyze pcrs 7 11
 ls -l /dev/tpm0 /dev/tpmrm0
@@ -158,8 +162,10 @@ journalctl -b -k --grep='tpm|ima' --no-pager
 ```
 
 Continue only when the firmware and kernel expose one intended TPM2 and
-systemd can identify it. PCR 7 and PCR 11 must be readable in a SHA-256 bank.
-Review journal output locally because it can reveal platform identifiers.
+systemd can identify it. `identify-tpm2` reads information from the TPM device;
+on this installed profile it requires `sudo`, even though `has-tpm2` can run as
+the regular user. PCR 7 and PCR 11 must be readable in a SHA-256 bank. Review
+journal output locally because it can reveal platform identifiers.
 
 Do not enable, disable, initialize, reset, provision, or clear the TPM from
 firmware or Linux during this audit. Do not install `tpm2-abrmd`; this design
@@ -208,20 +214,67 @@ on top of an untested boot-critical upgrade.
 
 ## Create the before-TPM recovery checkpoint
 
-Unlock and mount the encrypted `ARCH-BACKUP` disk using chapter 12. Verify the
-mount rather than trusting the directory name:
+Identify the encrypted external disk again instead of relying on a remembered
+`/dev/sdX` name:
 
 ```bash
-findmnt --target /run/media/neon/ARCH-BACKUP
-df -hT /run/media/neon/ARCH-BACKUP
-test "$(findmnt -nr -T /run/media/neon/ARCH-BACKUP -o TARGET)" = /run/media/neon/ARCH-BACKUP
+ls -l /dev/disk/by-id/usb-*
+backup_disk=/dev/disk/by-id/usb-REPLACE_WITH_THE_EXACT_WHOLE_DISK_ID
+backup_partition="${backup_disk}-part1"
+test -b "$backup_disk"
+test -b "$backup_partition"
+readlink -f "$backup_disk"
+lsblk -d -o NAME,PATH,SIZE,TYPE,MODEL,SERIAL,TRAN,RM \
+  "$(readlink -f "$backup_disk")"
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS \
+  "$backup_partition"
+```
+
+Replace the deliberately invalid assignment with the exact persistent entry
+for the whole USB disk, not one ending in `-part1`. The resolved whole device
+may currently be `/dev/sda`, but it must never be selected from that temporary
+name alone. Its model, serial, capacity, `TYPE=disk`, and `TRAN=usb` must match
+the physical backup disk; the partition must be LUKS2 labelled
+`ARCH-BACKUP-LUKS`.
+
+Unlock the LUKS partition, discover its cleartext mapping, and mount the ext4
+filesystem if the desktop did not mount it automatically:
+
+```bash
+udisksctl unlock -b "$backup_partition"
+backup_mapping="$(
+  lsblk -nrpo PATH,TYPE "$backup_partition" |
+  awk '$2 == "crypt" { print $1; exit }'
+)"
+test -b "$backup_mapping"
+backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET || true)"
+if [ -z "$backup_mount" ]; then
+  udisksctl mount -b "$backup_mapping"
+  backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET)"
+fi
+test "$backup_mount" = /run/media/neon/ARCH-BACKUP
+```
+
+`udisksctl unlock` exposes the decrypted block device; it does not guarantee
+that the filesystem has also been mounted. The mapping may be named
+`/dev/mapper/ARCH-BACKUP-LUKS`, `/dev/mapper/luks-...`, or `/dev/dm-*`, so the
+commands discover it rather than assuming a name.
+
+Verify the real mount rather than trusting the directory name:
+
+```bash
+findmnt --target "$backup_mount"
+df -hT "$backup_mount"
+test "$(findmnt -nr -T "$backup_mount" -o TARGET)" = "$backup_mount"
+test "$(findmnt -nr -T "$backup_mount" -o FSTYPE)" = ext4
+findmnt -nr -T "$backup_mount" -o OPTIONS | tr ',' '\n' | grep -Fx rw
 ```
 
 The source must be the external encrypted mapping and the filesystem must be
 ext4 mounted read-write. Define a new, non-overwriting checkpoint:
 
 ```bash
-tpm_backup_root=/run/media/neon/ARCH-BACKUP/rogue-thinkpad-recovery
+tpm_backup_root="$backup_mount/rogue-thinkpad-recovery"
 tpm_before="$tpm_backup_root/post-install-20-before-tpm2"
 test -d "$tpm_backup_root"
 test ! -e "$tpm_before"
@@ -345,10 +398,16 @@ Enter exactly:
 PCRBanks=sha256
 
 [PCRSignature:initrd]
-Phases=enter-initrd
+Phases=enter-initrd enter-initrd:leave-initrd enter-initrd:leave-initrd:sysinit enter-initrd:leave-initrd:sysinit:ready
 PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key-initrd.pem
 PCRPublicKey=/etc/systemd/tpm2-pcr-public-key-initrd.pem
 ```
+
+The four signed phase paths use one initrd-policy key and cover the useful PCR
+11 states from early initrd through the fully started system. The first value,
+`enter-initrd`, is the one available when the encrypted root is unlocked. The
+later values let `systemd-cryptenroll` validate the same signed policy safely
+when it is invoked after login and PCR 11 has already reached `ready`.
 
 This file declares PCR signing only. It deliberately contains no
 `SecureBootPrivateKey`, `SecureBootCertificate`, `SecureBootSigningTool`, or
@@ -400,9 +459,43 @@ sudo sh -c 'cd "$1" && sha256sum --check SHA256SUMS' sh "$tpm_before"
 Each ThinkPad must generate and protect its own key pair. Git contains only
 the paths and policy, never either machine's generated files.
 
-Synchronize pending writes and close the encrypted external disk using chapter
-12's established unmount sequence. Disconnect it before the controlled boot
-tests below.
+Do not replace this with ukify's two-key example merely because that example
+exists. Two PCR signing keys compartmentalize distinct secrets consumed in
+the initrd and later system phases. This design protects only the root LUKS
+credential during initrd, so it has no separate late-boot secret that would
+benefit from a second key. The additional signatures do not bypass PCR 7,
+Secure Boot, or the TPM PIN, and only the `enter-initrd` state can match when
+root unlock is requested.
+
+Keep this configuration after enrollment. Reducing `Phases=` back to only
+`enter-initrd` would not strengthen the actual early root unlock, but a later
+re-enrollment performed from the fully booted system would again lack a signed
+policy for its current PCR 11 state. Deleting the file would also stop future
+UKI regenerations from receiving updated PCR signatures.
+
+Synchronize pending writes and close the complete external stack in reverse
+order before the controlled boot tests:
+
+```bash
+sync
+udisksctl unmount -b "$backup_mapping"
+udisksctl lock -b "$backup_partition"
+udisksctl power-off -b "$(readlink -f "$backup_disk")"
+```
+
+The unmount and lock operations must succeed before `power-off` or physical
+disconnection. `unmount` targets the cleartext ext4 mapping, `lock` targets the
+encrypted partition, and `power-off` targets the whole physical disk. For the
+current temporary names that usually means mapping -> `/dev/sda1` -> `/dev/sda`;
+`udisksctl power-off -b /dev/sda1` would be the wrong layer. If an operation
+reports that the device is busy, find the process with:
+
+```bash
+sudo lsof +f -- "$backup_mount"
+```
+
+Close that process and retry without `--force`. Disconnect the disk only after
+`udisksctl power-off` reports success.
 
 ## Checkpoint 1 — Build signed-PCR UKIs without requesting TPM unlock
 
@@ -420,9 +513,9 @@ build or signing error.
 Inspect both artifacts:
 
 ```bash
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux-fallback.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
@@ -433,7 +526,9 @@ sudo bootctl --esp-path=/boot list
 Required results:
 
 - both UKIs contain non-empty `.pcrsig` and `.pcrpkey` sections;
-- the signatures describe SHA-256 PCR 11 and include the `enter-initrd` path;
+- the signatures describe SHA-256 PCR 11 and include `enter-initrd`,
+  `enter-initrd:leave-initrd`, `enter-initrd:leave-initrd:sysinit`, and
+  `enter-initrd:leave-initrd:sysinit:ready`;
 - both contain the same new PCR-policy public key;
 - normal still embeds `discard` without `tpm2-device=auto` and retains
   `quiet splash`;
@@ -453,6 +548,12 @@ sudo sha256sum \
 sudo sbctl verify
 systemctl --failed --no-pager
 ```
+
+The reboot before this block is mandatory. Files under `/run/systemd/` were
+exported by the UKI used for the current boot; running `mkinitcpio -P` or
+editing `/etc/kernel/uki.conf` cannot replace them inside an already running
+system. Comparing the hashes before booting the rebuilt normal UKI would
+compare stale runtime material and could produce a misleading mismatch.
 
 The two public-key hashes must match. Stop if a runtime file is missing or the
 hashes differ. A UKI section visible on disk is not sufficient by itself.
@@ -519,9 +620,9 @@ Rebuild and inspect both UKIs again:
 
 ```bash
 sudo mkinitcpio -P
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux-fallback.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
@@ -610,7 +711,7 @@ sudo systemd-cryptenroll /dev/nvme0n1p2 \
   --tpm2-device=auto \
   --tpm2-pcrs=7:sha256 \
   --tpm2-public-key=/etc/systemd/tpm2-pcr-public-key-initrd.pem \
-  --tpm2-public-key-pcrs=11:sha256 \
+  --tpm2-public-key-pcrs=11 \
   --tpm2-signature=/run/systemd/tpm2-pcr-signature.json \
   --tpm2-with-pin=yes
 ```
@@ -619,6 +720,14 @@ First enter the existing strong LUKS passphrase to authorize the header
 change, then enter and confirm the new unique TPM PIN. Stop on any warning
 about the device, PCR signature, public key, unsupported algorithm, PIN, or
 slot operation.
+
+The asymmetry is intentional. `--tpm2-pcrs=7:sha256` selects one raw PCR and
+its bank. On the systemd version validated on this ThinkPad,
+`--tpm2-public-key-pcrs=` expects the signed PCR mask and rejects
+`11:sha256` with `Not expecting hash algorithm specification in PCR mask
+value`. Use `11`; `PCRBanks=sha256` and the generated `.pcrsig` policy
+still make the signed PCR 11 authorization SHA-256. Omitting the bank from this
+mask does not downgrade it to SHA-1.
 
 The command creates the replacement TPM2 enrollment before wiping only older
 TPM2 slots. It must never be changed to `--wipe-slot=password`,
@@ -646,14 +755,39 @@ working.
 
 Create a distinct after-enrollment recovery checkpoint:
 
-Unlock and mount the encrypted `ARCH-BACKUP` disk again, then verify its real
-mount before writing:
+The preceding reboots discarded the shell variables. Repeat the identification,
+unlock, mapping discovery, and conditional mount sequence here so this
+checkpoint does not depend on another chapter:
 
 ```bash
-tpm_backup_root=/run/media/neon/ARCH-BACKUP/rogue-thinkpad-recovery
+ls -l /dev/disk/by-id/usb-*
+backup_disk=/dev/disk/by-id/usb-REPLACE_WITH_THE_EXACT_WHOLE_DISK_ID
+backup_partition="${backup_disk}-part1"
+test -b "$backup_disk"
+test -b "$backup_partition"
+readlink -f "$backup_disk"
+lsblk -d -o NAME,PATH,SIZE,TYPE,MODEL,SERIAL,TRAN,RM \
+  "$(readlink -f "$backup_disk")"
+lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS \
+  "$backup_partition"
+udisksctl unlock -b "$backup_partition"
+backup_mapping="$(
+  lsblk -nrpo PATH,TYPE "$backup_partition" |
+  awk '$2 == "crypt" { print $1; exit }'
+)"
+test -b "$backup_mapping"
+backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET || true)"
+if [ -z "$backup_mount" ]; then
+  udisksctl mount -b "$backup_mapping"
+  backup_mount="$(findmnt -nr -S "$backup_mapping" -o TARGET)"
+fi
+test "$backup_mount" = /run/media/neon/ARCH-BACKUP
+findmnt --target "$backup_mount"
+df -hT "$backup_mount"
+test "$(findmnt -nr -T "$backup_mount" -o FSTYPE)" = ext4
+findmnt -nr -T "$backup_mount" -o OPTIONS | tr ',' '\n' | grep -Fx rw
+tpm_backup_root="$backup_mount/rogue-thinkpad-recovery"
 tpm_after="$tpm_backup_root/post-install-20-after-tpm2"
-findmnt --target /run/media/neon/ARCH-BACKUP
-test "$(findmnt -nr -T /run/media/neon/ARCH-BACKUP -o TARGET)" = /run/media/neon/ARCH-BACKUP
 test -d "$tpm_backup_root"
 test ! -e "$tpm_after"
 sudo install -d -m 0700 "$tpm_after/pcr-policy"
@@ -678,9 +812,19 @@ sudo chown -R root:root "$tpm_after"
 sudo sh -c 'cd "$1" && sha256sum --check SHA256SUMS' sh "$tpm_after"
 ```
 
-Do not copy the actual PIN or recovery key into this directory. Close the
-encrypted disk through chapter 12's established synchronization and unmount
-sequence before the boot tests.
+Do not copy the actual PIN or recovery key into this directory. Close and power
+off the complete stack before the boot tests:
+
+```bash
+sync
+udisksctl unmount -b "$backup_mapping"
+udisksctl lock -b "$backup_partition"
+udisksctl power-off -b "$(readlink -f "$backup_disk")"
+```
+
+All three operations must succeed. Do not unplug the drive after merely
+unmounting ext4: locking removes the cleartext mapping, and powering off the
+whole disk flushes and deconfigures the USB device.
 
 ## Test the normal TPM2 plus PIN path
 
@@ -794,9 +938,9 @@ grep -F 'fsck.mode=auto' /etc/kernel/cmdline
 ! grep -F 'fsck.mode=auto' /etc/kernel/cmdline-fallback
 sudo mkinitcpio -P
 sudo sha256sum /boot/EFI/Linux/arch-linux.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux-fallback.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
@@ -825,7 +969,7 @@ byte-for-byte, regenerate its new signed policy, and verify both UKIs:
 sudo cp -a /etc/kernel/cmdline.before-signed-pcr-test /etc/kernel/cmdline
 ! grep -F 'fsck.mode=auto' /etc/kernel/cmdline
 sudo mkinitcpio -P
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
@@ -844,9 +988,9 @@ mkinitcpio, the initramfs, Plymouth, its theme, or an embedded command line:
 
 ```bash
 sudo mkinitcpio -P
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux-fallback.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
@@ -895,7 +1039,7 @@ bootctl --esp-path=/boot status
 cat /proc/cmdline
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux.efi
 sudo bootctl kernel-inspect /boot/EFI/Linux/arch-linux-fallback.efi
-sudo ukify inspect --section=.pcrsig:text --section=.pcrpkey:text \
+sudo ukify --section=.pcrsig:text --section=.pcrpkey:text inspect \
   /boot/EFI/Linux/arch-linux.efi
 sudo test -s /run/systemd/tpm2-pcr-signature.json
 sudo test -s /run/systemd/tpm2-pcr-public-key.pem
@@ -907,6 +1051,81 @@ sudo sbctl status
 sudo sbctl verify
 journalctl -b -u 'systemd-cryptsetup@cryptlvm.service' --no-pager
 ```
+
+### Enrollment reports `Failed to unseal secret using TPM2: Device not a stream`
+
+Stop and inspect the LUKS inventory; do not assume that a usable token was
+created:
+
+```bash
+sudo systemd-cryptenroll /dev/nvme0n1p2
+sudo cryptsetup luksDump /dev/nvme0n1p2
+```
+
+During the 2026-09-06 validation, this occurred when the UKI signed only the
+`enter-initrd` PCR 11 state but enrollment was being performed after the
+running system had reached later boot phases. Keep the four-value `Phases=`
+line documented above, rebuild both UKIs, inspect their PCR sections, and cold
+boot the rebuilt normal UKI. Only after that reboot, verify that the runtime
+signature exists and the public-key hashes match:
+
+```bash
+sudo test -s /run/systemd/tpm2-pcr-signature.json
+sudo test -s /run/systemd/tpm2-pcr-public-key.pem
+sudo sha256sum \
+  /run/systemd/tpm2-pcr-public-key.pem \
+  /etc/systemd/tpm2-pcr-public-key-initrd.pem
+```
+
+The configuration change does not require generating a new key pair. Do not
+delete or replace the existing PCR key files merely to add phase signatures.
+Retry enrollment only after TPM discovery, PCR access, both UKI signatures,
+and the manual LUKS passphrase remain healthy.
+
+If an earlier revision of this chapter already created the original
+`pcr-policy` backup with only `Phases=enter-initrd`, preserve it. Reopen and
+mount `ARCH-BACKUP` with the complete persistent-device procedure in **Create
+the before-TPM recovery checkpoint**, then create a separate, non-overwriting
+checkpoint for the corrected configuration and the same key pair:
+
+```bash
+tpm_backup_root="$backup_mount/rogue-thinkpad-recovery"
+tpm_correction="$tpm_backup_root/post-install-20-after-phase-policy-correction"
+test -d "$tpm_backup_root"
+test ! -e "$tpm_correction"
+sudo install -d -m 0700 "$tpm_correction"
+sudo cp --archive \
+  /etc/kernel/uki.conf \
+  /etc/systemd/tpm2-pcr-private-key-initrd.pem \
+  /etc/systemd/tpm2-pcr-public-key-initrd.pem \
+  "$tpm_correction/"
+sudo sh -c 'cd "$1" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS' sh "$tpm_correction"
+sudo chmod -R go-rwx "$tpm_correction"
+sudo chown -R root:root "$tpm_correction"
+sudo sh -c 'cd "$1" && sha256sum --check SHA256SUMS' sh "$tpm_correction"
+sync
+udisksctl unmount -b "$backup_mapping"
+udisksctl lock -b "$backup_partition"
+udisksctl power-off -b "$(readlink -f "$backup_disk")"
+```
+
+All closing operations must succeed before disconnecting the disk. This
+checkpoint is only for a machine that already followed the superseded
+single-phase instructions; a fresh run uses the normal before-TPM checkpoint.
+
+### Enrollment rejects `--tpm2-public-key-pcrs=11:sha256`
+
+The systemd build on this machine reports:
+
+```text
+Not expecting hash algorithm specification in PCR mask value, refusing: 11:sha256
+```
+
+Use `--tpm2-public-key-pcrs=11` exactly as shown by the corrected enrollment
+command. Keep `--tpm2-pcrs=7:sha256` unchanged: the first is a signed-PCR
+mask, while the second explicitly selects the bank for a raw current value.
+The SHA-256 bank for the signed policy remains declared by
+`PCRBanks=sha256` and can be confirmed in the UKI's `.pcrsig` output.
 
 ### Forgotten TPM PIN
 
