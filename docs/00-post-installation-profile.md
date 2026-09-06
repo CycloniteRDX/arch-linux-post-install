@@ -179,8 +179,9 @@ After that extension:
 - systemd-boot keeps its three-second menu and disabled editor;
 - `sd-encrypt`, not Plymouth, remains responsible for LUKS unlocking;
 - the official `bgrt` theme is the first baseline;
-- chapter 20 may add TPM2 unlock to the normal UKI only, with a unique PIN,
-  raw PCR 7, signed PCR 11, and independently tested manual credentials;
+- chapter 20 adds TPM2 unlock to the normal UKI only, with a unique PIN, raw
+  PCR 7, signed PCR 11, and independently tested manual credentials; this path
+  passed hardware validation on 2026-09-06;
 - the fallback UKI keeps requiring the strong LUKS passphrase or generated
   recovery key and never requests the TPM;
 - custom boot artwork remains a later, separate change.

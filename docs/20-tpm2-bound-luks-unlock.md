@@ -29,11 +29,12 @@ behavior, alternatives, and recovery boundaries behind this procedure.
 
 ## Status and safety gate
 
-This chapter is under hardware validation. The 2026-09-06 validation pass
-confirmed that the TPM identification probe needs elevated device access on
-this ThinkPad and exposed two version-specific command corrections documented
-below. Do not mark the chapter complete until the normal PIN path, textual
-fallback, signed-PCR update test, and recovery path all pass.
+This chapter passed complete hardware validation on the target ThinkPad T14
+Gen 1 AMD on 2026-09-06. The validated result includes the normal PIN path,
+the independent textual fallback, the signed-PCR update test without TPM
+reenrollment, and the manual recovery paths. Validation also confirmed that
+the TPM identification probe needs elevated device access on this ThinkPad and
+exposed the two version-specific command corrections documented below.
 
 Before applying it:
 
@@ -1249,6 +1250,11 @@ header merely to remove a functioning token.
 - [ ] `post-install-18-v2` remains the latest required dotfiles checkpoint.
 - [ ] Clearing the TPM, unattended TPM unlock, raw PCR 11 binding, hibernation, and dotfiles changes remain absent.
 
+This complete sequence passed hardware validation on the target ThinkPad T14
+Gen 1 AMD on 2026-09-06. Normal boot unlocks through TPM2 plus the unique PIN,
+the textual fallback and manual credentials remain independent, and a changed
+signed-PCR UKI continues to unlock through the same token without reenrollment.
+
 ## Sources
 
 - [Arch package: tpm2-tss](https://archlinux.org/packages/core/x86_64/tpm2-tss/)
@@ -1268,7 +1274,6 @@ header merely to remove a functioning token.
 
 ## Next step
 
-Hardware-validate this chapter before adding another boot, trust, or storage
-change. Once normal PIN unlock, textual fallback, recovery credentials, and a
-changed signed-PCR UKI all pass, the next extension can return to advanced
-desktop polish without changing the established TPM policy.
+Return to advanced desktop polish without changing the now validated TPM
+policy. Treat any future Secure Boot, PCR-policy key, LUKS token, or early-boot
+change as a separate security-sensitive extension with its own recovery gate.
