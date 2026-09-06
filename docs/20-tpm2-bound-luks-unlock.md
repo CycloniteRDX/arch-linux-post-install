@@ -1274,6 +1274,7 @@ signed-PCR UKI continues to unlock through the same token without reenrollment.
 
 ## Next step
 
-Return to advanced desktop polish without changing the now validated TPM
-policy. Treat any future Secure Boot, PCR-policy key, LUKS token, or early-boot
-change as a separate security-sensitive extension with its own recovery gate.
+Continue with chapter 21 to record the pre-personalization checkpoint and
+refine the existing Waybar without changing the now validated TPM policy.
+Treat any future Secure Boot, PCR-policy key, LUKS token, or early-boot change
+as a separate security-sensitive extension with its own recovery gate.

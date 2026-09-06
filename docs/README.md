@@ -15,6 +15,8 @@ post-baseline extension and passed hardware validation on 2026-09-04. Chapter
 validation on 2026-09-05; its corrected dotfiles checkpoint is
 `post-install-18-v2`. Chapter 19 passed hardware validation on 2026-09-05.
 Chapter 20 passed hardware validation on 2026-09-06.
+Chapter 21 begins the current-component personalization series with a reviewed
+Waybar refinement and awaits hardware validation.
 
 Only chapters that already exist are linked.
 
@@ -41,6 +43,7 @@ Only chapters that already exist are linked.
 | [18. Automatic session suspend](18-automatic-session-suspend.md) | Niri and Kitty | Extend the single swayidle lifecycle with battery-only suspend at 30 idle minutes, preserve inhibitors and lock readiness, and verify AC, battery, and resume behavior. |
 | [19. Plymouth graphical boot](19-plymouth-graphical-boot.md) | Kitty, boot menu, and TTY | Add a graphical LUKS presentation to the normal signed UKI while preserving a broad, verbose fallback UKI independent of Plymouth. |
 | [20. TPM2-bound LUKS unlock](20-tpm2-bound-luks-unlock.md) | Kitty, boot menu, and TTY | Add a PIN-authorized TPM2 route bound to Secure Boot and signed UKI measurements while retaining passphrase, recovery-key, fallback-UKI, and ISO recovery. |
+| [21. Waybar visual refinement](21-waybar-visual-refinement.md) | Niri and Kitty | Record the pre-personalization checkpoint, refine the existing Waybar into three Midnight Circuit islands, preserve every owner, and validate all status and interaction paths before tagging the new dotfiles state. |
 
 ## Why Niri is not the first command
 
@@ -58,14 +61,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, and 19 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, and 21 |
 | Power management and laptops | Chapters 06, 11, and 18 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapter 06 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, 15, 17, and 19 |
+| Appearance | Chapters 08, 10, 15, 17, 19, and 21 |
 | Console improvements | Chapters 02 and 08 |
 | Applications | Chapter 09 |
 
