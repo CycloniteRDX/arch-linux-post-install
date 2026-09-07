@@ -14,15 +14,15 @@ locking in Niri's established bindings, and adds the two icon-font packages
 required by the selected glyphs. It adds no daemon, shell, widget framework,
 AUR package, systemd unit, privilege rule, or machine-specific output setting.
 
-The first personalization pass keeps the current component owners. The planned
+The first personalization pass keeps the current component owners. Its current
 order is:
 
 1. Waybar presentation and interactions;
-2. Fuzzel;
-3. Mako;
-4. swaylock;
-5. swaybg and wallpaper presentation;
-6. Niri window, overview, and motion details;
+2. Niri window, overview, input, and motion details;
+3. Fuzzel;
+4. Mako;
+5. swaylock;
+6. swaybg and wallpaper presentation;
 7. Kitty plus GTK and Qt consistency;
 8. tuigreet;
 9. Plymouth;
@@ -34,9 +34,13 @@ renderer. Replacement experiments must not be mixed into this first pass.
 
 ## Status and prerequisites
 
-This chapter is reviewed and awaits hardware validation on the target ThinkPad
-T14 Gen 1 AMD. Do not create `post-install-21-v1` until every interaction,
-state colour, reload, logout/login, and rollback test below passes.
+This chapter passed hardware validation on the target ThinkPad T14 Gen 1 AMD
+on 2026-09-07. In `arch-linux-post-install`, publish
+`post-install-21-v1` at the final chapter-21-only commit `536d61a`. In
+`niri-dotfiles`, publish the same tag name at `b922d85`, the last clean
+Waybar-only state, rather than at a later Niri commit. These are independent
+references in two repositories. Chapter 22 then records the cumulative
+finished desktop.
 
 Before applying it:
 
@@ -357,7 +361,8 @@ The interaction contract adds only:
 | Right-click Bluetooth | Open Blueman Manager |
 | Right-click speaker or microphone | Open pavucontrol |
 | Left-click speaker or microphone | Toggle the corresponding default endpoint mute |
-| Scroll speaker, microphone, or brightness | Adjust the established control by 5% |
+| Scroll speaker | Adjust output volume by 5% in this historical checkpoint |
+| Scroll microphone or brightness | Adjust the established control by 5% |
 | Hover power profile | Show the profile exposed by `tlp-pd` |
 | `SIGUSR1` | Toggle bar visibility |
 | `SIGUSR2` | Reload Waybar |
@@ -580,11 +585,12 @@ profile and battery must remain separate modules.
 
 ### Session exit and lock remain outside Waybar
 
-Use `Super+Alt+L`; swaylock must cover the session and accept both one wrong
-password and the correct password. After saving all work, use `Super+Shift+E`,
-confirm Niri's exit request, and log in again through the unchanged tuigreet.
-The absence of `Exit` in Waybar is deliberate and must not remove either Niri
-binding.
+At the historical `post-install-21-v1` checkpoint, use `Super+Alt+L`;
+swaylock must cover the session and accept both one wrong password and the
+correct password. After saving all work, use `Super+Shift+E`, confirm Niri's
+exit request, and log in again through the unchanged tuigreet. Chapter 22 later
+changes the lock binding to `Super+Shift+L`. The absence of `Exit` in
+Waybar is deliberate and must not remove either Niri binding.
 
 After login:
 
@@ -696,7 +702,9 @@ to repair a Waybar presentation problem.
 
 ## Next step
 
-After hardware validation and publication of `post-install-21-v1`, personalize
-Fuzzel using the same Midnight Circuit geometry and state hierarchy. Keep
-Waybar selected while that next component is evaluated so visual differences
-can be attributed to one change at a time.
+Continue with chapter 22, which records the Niri work that was deliberately
+moved forward and validated alongside the final Waybar input refinements.
+After publishing `post-install-22-v1`, personalize Fuzzel using the same
+Midnight Circuit geometry and state hierarchy. Keep Waybar and Niri selected
+while that next component is evaluated so visual differences can be attributed
+to one change at a time.

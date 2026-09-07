@@ -23,10 +23,13 @@ executable bit in `post-install-18-v2`. Chapter 19 adds the Plymouth procedure
 with a graphical normal UKI and independent textual fallback,
 hardware-validated on 2026-09-05. Chapter 20 adds the reviewed TPM2-bound LUKS
 unlock procedure with a unique PIN, signed PCR 11 policy, and independent
-manual credentials, hardware-validated on 2026-09-06. Advanced desktop polish
-now begins in chapter 21 with a reviewed compact Waybar refinement and its two
-official icon-font dependencies; it awaits hardware validation. Per-host
-output overrides remain deliberate later work.
+manual credentials, hardware-validated on 2026-09-06. Chapter 21 adds the
+compact Waybar refinement and its two official icon-font dependencies,
+hardware-validated on 2026-09-07. Chapter 22 records the first target
+ThinkPad's finished Niri v1 configuration, including its input policy and
+event-driven refresh-rate integration with TLP, hardware-validated on
+2026-09-07. The second ThinkPad and recurring external-display layouts still
+require their own measured output policy.
 
 ## Starting point
 

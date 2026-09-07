@@ -14,9 +14,10 @@ post-baseline extension and passed hardware validation on 2026-09-04. Chapter
 17 passed hardware validation on 2026-09-05. Chapter 18 passed hardware
 validation on 2026-09-05; its corrected dotfiles checkpoint is
 `post-install-18-v2`. Chapter 19 passed hardware validation on 2026-09-05.
-Chapter 20 passed hardware validation on 2026-09-06.
-Chapter 21 begins the current-component personalization series with a reviewed
-Waybar refinement and awaits hardware validation.
+Chapter 20 passed hardware validation on 2026-09-06. Chapter 21 passed hardware
+validation on 2026-09-07 and records the first finished Waybar presentation.
+Chapter 22 passed hardware validation on 2026-09-07 and records the first
+target ThinkPad's finished Niri v1 behavior and adaptive refresh integration.
 
 Only chapters that already exist are linked.
 
@@ -44,6 +45,7 @@ Only chapters that already exist are linked.
 | [19. Plymouth graphical boot](19-plymouth-graphical-boot.md) | Kitty, boot menu, and TTY | Add a graphical LUKS presentation to the normal signed UKI while preserving a broad, verbose fallback UKI independent of Plymouth. |
 | [20. TPM2-bound LUKS unlock](20-tpm2-bound-luks-unlock.md) | Kitty, boot menu, and TTY | Add a PIN-authorized TPM2 route bound to Secure Boot and signed UKI measurements while retaining passphrase, recovery-key, fallback-UKI, and ISO recovery. |
 | [21. Waybar visual refinement](21-waybar-visual-refinement.md) | Niri and Kitty | Record the pre-personalization checkpoint, install the two selected icon fonts, deploy the compact full-width Midnight Circuit bar, and validate every status and interaction path before tagging the new dotfiles state. |
+| [22. Niri daily-driver refinement](22-niri-daily-driver-refinement.md) | Niri, Kitty, and TTY | Deploy the first target's finished Niri v1 input, layout, and binding policy; install its explicit runtime dependencies; and couple only the internal-panel refresh rate to TLP's D-Bus profile. |
 
 ## Why Niri is not the first command
 
@@ -61,14 +63,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, and 21 |
-| Power management and laptops | Chapters 06, 11, and 18 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, and 22 |
+| Power management and laptops | Chapters 06, 11, 18, and 22 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
-| Input devices | Chapter 06 |
+| Input devices | Chapters 06 and 22 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, 15, 17, 19, and 21 |
+| Appearance | Chapters 08, 10, 15, 17, 19, 21, and 22 |
 | Console improvements | Chapters 02 and 08 |
 | Applications | Chapter 09 |
 
