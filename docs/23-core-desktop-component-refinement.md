@@ -331,4 +331,9 @@ and suspend/resume validation on the first target on 2026-09-08.
 
 ## Next step
 
-Refine swaybg and the wallpaper presentation while preserving established output, lock, idle, and power-policy ownership. Maintain the finished static policy: one renderer, one selected wallpaper, one fallback colour, and no rotation or automation scripts. After that surface is stable, perform the cross-application GTK and Qt consistency review; then address Micro, Nano, and Vim personalization and proceed to style tuigreet and Plymouth. Chapter 24 records the completed tuigreet refinement.
+The existing swaybg wallpaper presentation was subsequently accepted as the
+finished static policy: one renderer, one selected wallpaper, one fallback
+colour, and no rotation or automation scripts. Chapter 24 records the
+completed tuigreet refinement. The next open surface is the cross-application
+GTK and Qt consistency review, followed by separate Micro, Nano, and Vim
+personalization and then Plymouth styling.
