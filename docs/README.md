@@ -18,6 +18,8 @@ Chapter 20 passed hardware validation on 2026-09-06. Chapter 21 passed hardware
 validation on 2026-09-07 and records the first finished Waybar presentation.
 Chapter 22 passed hardware validation on 2026-09-07 and records the first
 target ThinkPad's finished Niri v1 behavior and adaptive refresh integration.
+Chapter 23 passed hardware validation on 2026-09-08 and records the coordinated
+Kitty, Mako, Fuzzel, swaylock, and system-resume monitor-restoration refinement.
 
 Only chapters that already exist are linked.
 
@@ -46,6 +48,7 @@ Only chapters that already exist are linked.
 | [20. TPM2-bound LUKS unlock](20-tpm2-bound-luks-unlock.md) | Kitty, boot menu, and TTY | Add a PIN-authorized TPM2 route bound to Secure Boot and signed UKI measurements while retaining passphrase, recovery-key, fallback-UKI, and ISO recovery. |
 | [21. Waybar visual refinement](21-waybar-visual-refinement.md) | Niri and Kitty | Record the pre-personalization checkpoint, install the two selected icon fonts, deploy the compact full-width Midnight Circuit bar, and validate every status and interaction path before tagging the new dotfiles state. |
 | [22. Niri daily-driver refinement](22-niri-daily-driver-refinement.md) | Niri, Kitty, and TTY | Deploy the first target's finished Niri v1 input, layout, and binding policy; install its explicit runtime dependencies; and couple only the internal-panel refresh rate to TLP's D-Bus profile. |
+| [23. Core desktop component refinement](23-core-desktop-component-refinement.md) | Niri, Kitty, and TTY | Refine Kitty, Mako, Fuzzel, and swaylock; preserve one owner per role; and validate explicit monitor restoration after system resume. |
 
 ## Why Niri is not the first command
 
@@ -63,14 +66,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, and 22 |
-| Power management and laptops | Chapters 06, 11, 18, and 22 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, 22, and 23 |
+| Power management and laptops | Chapters 06, 11, 18, 22, and 23 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapters 06 and 22 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, 15, 17, 19, 21, and 22 |
+| Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, and 23 |
 | Console improvements | Chapters 02 and 08 |
 | Applications | Chapter 09 |
 
