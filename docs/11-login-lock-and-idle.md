@@ -234,6 +234,12 @@ This remembers the last successful username and session choice, never the
 password. It provides Niri as the default while leaving tuigreet's session
 selection available. It does not enable autologin.
 
+This remains the intentionally simple installation baseline. After the full
+desktop is stable, [chapter 24](24-tuigreet-visual-refinement.md) removes
+username memory, keeps only session memory, hides password length, and adds the
+hardware-validated RogueOS presentation without changing this chapter's PAM or
+recovery model.
+
 Inspect the exact effective file and executable paths:
 
 ```bash

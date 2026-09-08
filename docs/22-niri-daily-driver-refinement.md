@@ -518,7 +518,7 @@ suspend/resume validation on the first target on 2026-09-07.
 
 ## Next step
 
-Personalize Fuzzel while keeping the validated Waybar and Niri checkpoints
-unchanged. The launcher chapter should change one surface, preserve application
-discovery, and prove keyboard, mouse, scaling, theme, and rollback behavior
-before Mako is restyled.
+Refine the remaining core desktop components while keeping the validated
+Waybar and Niri checkpoints unchanged. Chapter 23 records the already-completed
+Kitty, Mako, Fuzzel, swaylock, and system-resume monitor-restoration series as
+one cumulative, hardware-validated checkpoint.

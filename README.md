@@ -28,8 +28,12 @@ compact Waybar refinement and its two official icon-font dependencies,
 hardware-validated on 2026-09-07. Chapter 22 records the first target
 ThinkPad's finished Niri v1 configuration, including its input policy and
 event-driven refresh-rate integration with TLP, hardware-validated on
-2026-09-07. The second ThinkPad and recurring external-display layouts still
-require their own measured output policy.
+2026-09-07. Chapter 23 records the coordinated Kitty, Mako, Fuzzel, swaylock,
+and system-resume monitor-restoration refinement, hardware-validated on
+2026-09-08. Chapter 24 records the compact RogueOS tuigreet presentation and
+its unchanged greetd, PAM, keyring, Niri, and TTY recovery boundaries,
+hardware-validated on 2026-09-08. The second ThinkPad and recurring
+external-display layouts still require their own measured output policy.
 
 ## Starting point
 

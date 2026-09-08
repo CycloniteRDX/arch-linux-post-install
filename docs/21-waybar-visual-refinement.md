@@ -14,19 +14,19 @@ locking in Niri's established bindings, and adds the two icon-font packages
 required by the selected glyphs. It adds no daemon, shell, widget framework,
 AUR package, systemd unit, privilege rule, or machine-specific output setting.
 
-The first personalization pass keeps the current component owners. Its current
-order is:
+The first personalization pass keeps the current component owners. Its
+reviewed sequence, including later consolidations, is:
 
 1. Waybar presentation and interactions;
 2. Niri window, overview, input, and motion details;
-3. Fuzzel;
-4. Mako;
-5. swaylock;
-6. swaybg and wallpaper presentation;
-7. Kitty plus GTK and Qt consistency;
-8. tuigreet;
-9. Plymouth;
-10. complete visual validation and a stable dotfiles release.
+3. Kitty, Mako, Fuzzel, swaylock, and resume restoration — consolidated into
+   chapter 23;
+4. swaybg and static wallpaper presentation — accepted without automation;
+5. tuigreet — completed in chapter 24;
+6. GTK and Qt cross-application consistency;
+7. Micro, Nano, and Vim;
+8. Plymouth;
+9. complete visual validation and a stable dotfiles release.
 
 Only after that sequence is attractive and hardware-validated will the project
 compare replacements such as SwayNotificationCenter or another wallpaper
