@@ -28,6 +28,10 @@ procedure now also ends with the validated enabled-daemon, adapter-off-at-boot
 policy. Chapter 26 passed hardware validation on 2026-09-09 and records the
 minimal RogueOS Plymouth theme while retaining a Plymouth-free textual
 fallback and verified manual LUKS recovery.
+Chapter 27 passed hardware validation on 2026-09-09 and closes the first
+complete desktop pass: GTK/Qt consistency, Papirus notification icons,
+on-demand Bluetooth, clean Stow ownership, suspend/logout recovery, and normal
+plus fallback boot paths are validated together.
 
 Only chapters that already exist are linked.
 
@@ -60,6 +64,7 @@ Only chapters that already exist are linked.
 | [24. Tuigreet visual refinement](24-tuigreet-visual-refinement.md) | TTY and Niri | Apply the compact RogueOS login presentation, preserve privacy and PAM boundaries, validate the Matrix background and keyring sequence, and retain staged TTY rollback. |
 | [25. Terminal shell and editor refinement](25-terminal-shell-and-editor-refinement.md) | Niri and Kitty | Deploy the separate Bash, Nano, Micro, and Vim packages; add official Nano syntax definitions and project KDL support; preserve Kitty hooks and Wayland clipboard integration; and validate the complete terminal workflow. |
 | [26. Plymouth visual refinement](26-plymouth-visual-refinement.md) | Kitty, boot menu, and TTY | Install the minimal RogueOS theme descriptor, reuse Arch's packaged watermark and encrypted-root controls, rebuild and sign both UKIs, and validate graphical normal plus textual fallback boots. |
+| [27. Global desktop validation](27-global-desktop-validation.md) | Niri, Kitty, boot menu, and TTY | Close the GTK/Qt review, correct Mako icon lookup, make Bluetooth on-demand, verify the complete desktop and recovery lifecycle, and prepare the stable dotfiles release. |
 
 ## Why Niri is not the first command
 
@@ -77,14 +82,14 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, 22, 23, 24, and 25 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, 22, 23, 24, 25, 26, and 27 |
 | Power management and laptops | Chapters 06, 11, 18, 22, and 23 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapters 06 and 22 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, 23, 24, and 25 |
+| Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, 23, 24, 25, 26, and 27 |
 | Console improvements | Chapters 02, 08, and 25 |
 | Applications | Chapter 09 |
 

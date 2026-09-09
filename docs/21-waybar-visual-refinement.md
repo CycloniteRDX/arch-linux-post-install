@@ -25,8 +25,9 @@ reviewed sequence, including later consolidations, is:
 5. tuigreet — completed in chapter 24;
 6. Bash, Nano, Micro, and Vim — completed in chapter 25;
 7. minimal RogueOS Plymouth refinement — completed in chapter 26;
-8. GTK and Qt cross-application consistency;
-9. complete visual validation and a stable dotfiles release.
+8. GTK and Qt cross-application consistency — completed in chapter 27;
+9. complete visual validation — completed in chapter 27, with the stable
+   dotfiles release ready after its documentation commit.
 
 Only after that sequence is attractive and hardware-validated will the project
 compare replacements such as SwayNotificationCenter or another wallpaper
@@ -704,6 +705,5 @@ to repair a Waybar presentation problem.
 
 Continue with chapter 22, which records the Niri work that was deliberately
 moved forward and validated alongside the final Waybar input refinements. The
-subsequent component, tuigreet, and terminal-workflow stages are now recorded
-through chapter 25. GTK and Qt consistency is the next open review; optional
-Plymouth restyling follows only if it offers a concrete improvement.
+subsequent component, tuigreet, terminal-workflow, Plymouth, and final global
+validation stages are now recorded through chapter 27.

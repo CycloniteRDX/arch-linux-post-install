@@ -340,6 +340,14 @@ available to `bluetoothctl`; after Blueman enabled it, the controller appeared
 as powered and pairable; after Blueman disabled it, the controller remained
 enumerated with `Powered: no` and `PowerState: off`.
 
+This is the chapter 07 service checkpoint, not the final user-session policy.
+Once Waybar is available, chapter 27 suppresses the package-owned permanent
+`blueman-applet` autostart with a user XDG override and delegates ordinary
+power toggling to an rfkill-aware helper. The final cold boot retains an active
+BlueZ daemon with an unblocked but unpowered controller; Blueman Manager starts
+only when explicitly requested. Do not apply that later presentation policy
+here, before Waybar provides the replacement control path.
+
 To return to BlueZ's packaged automatic-enable policy, restore the reviewed
 backup and reboot:
 
@@ -723,6 +731,8 @@ available through `udisksctl`.
       unpowered after a cold boot.
 - [ ] Blueman can expose and power the T14 controller, then return it to
       `Powered: no` without stopping BlueZ or changing Wi-Fi.
+- [ ] After chapter 27, the Waybar helper can turn the controller on and off
+      while Blueman Applet and Blueman Tray remain absent at session startup.
 - [ ] No deprecated BlueZ or overlapping PulseAudio package is installed.
 - [ ] Blueman opens and can pair a deliberately selected device.
 - [ ] UDisks remains D-Bus activated rather than manually enabled.

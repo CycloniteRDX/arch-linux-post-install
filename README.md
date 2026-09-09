@@ -42,6 +42,13 @@ unpowered until the user enables it. Chapter 26 replaces the packaged BGRT
 presentation with the minimal RogueOS Plymouth descriptor, reuses Arch's
 packaged watermark and input controls, and preserves a Plymouth-free textual
 fallback; normal and fallback boots passed hardware validation on 2026-09-09.
+Chapter 27 closes the first complete personalization cycle. It records the
+cross-application GTK/Qt review, corrects Mako named-icon lookup to the selected
+Papirus family, replaces the permanent Blueman applet with an rfkill-aware
+Waybar toggle and on-demand manager, and repeats the critical desktop,
+suspend, logout, keyring, service, normal-boot, and recovery checks. The final
+combined state passed hardware validation on the first ThinkPad on 2026-09-09
+and is ready for the matching dotfiles `v1.0.0` release.
 The second ThinkPad and recurring
 external-display layouts still require their own measured output policy.
 

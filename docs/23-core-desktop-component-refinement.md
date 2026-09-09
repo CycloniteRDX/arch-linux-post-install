@@ -213,10 +213,12 @@ rendering, icons, stacking, and fullscreen visibility. Then test:
 - expired notifications appear in `makoctl history`;
 - `makoctl restore` returns the newest historical notification.
 
-The selected `icon-path` explicitly searches Adwaita, while hicolor and pixmaps
-remain Mako's built-in fallbacks. This is valid but distinct from the desktop's
-general Papirus preference; change it only if real notifications demonstrate a
-missing or visually inconsistent named icon.
+The chapter 23 checkpoint explicitly searched Adwaita. Final global testing
+later proved that the installed Adwaita symbolic layout did not resolve Mako's
+tested named icons, while Papirus did. Chapter 27 therefore changes the current
+configuration to `/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus`;
+hicolor and pixmaps remain Mako's built-in fallbacks. Keep the historical
+chapter 23 tag unchanged.
 
 ## Validate swaylock
 
@@ -333,8 +335,6 @@ and suspend/resume validation on the first target on 2026-09-08.
 
 The existing swaybg wallpaper presentation was subsequently accepted as the
 finished static policy: one renderer, one selected wallpaper, one fallback
-colour, and no rotation or automation scripts. Chapter 24 records the
-completed tuigreet refinement. The terminal workflow is completed in chapter
-25 with separate Bash, Nano, Micro, and Vim packages. The next open surface is
-the cross-application GTK and Qt consistency review, followed by the decision
-on whether Plymouth needs further styling.
+colour, and no rotation or automation scripts. Chapter 24 records tuigreet,
+chapter 25 completes the terminal workflow, chapter 26 completes Plymouth, and
+chapter 27 records the finished GTK/Qt and cross-component validation.
