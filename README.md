@@ -38,7 +38,11 @@ Nano syntax collection, project-owned KDL highlighting, and Wayland clipboard
 integration; the complete set passed terminal and visual validation on
 2026-09-08. The established chapter 07 Bluetooth service now also records the
 validated final policy: BlueZ remains enabled while the controller starts
-unpowered until the user enables it. The second ThinkPad and recurring
+unpowered until the user enables it. Chapter 26 replaces the packaged BGRT
+presentation with the minimal RogueOS Plymouth descriptor, reuses Arch's
+packaged watermark and input controls, and preserves a Plymouth-free textual
+fallback; normal and fallback boots passed hardware validation on 2026-09-09.
+The second ThinkPad and recurring
 external-display layouts still require their own measured output policy.
 
 ## Starting point

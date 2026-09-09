@@ -25,7 +25,9 @@ tuigreet presentation without changing greetd, PAM, Niri, or TTY recovery.
 Chapter 25 passed terminal and visual validation on 2026-09-08 and records the
 separate Bash, Nano, Micro, and Vim Stow packages. The chapter 07 Bluetooth
 procedure now also ends with the validated enabled-daemon, adapter-off-at-boot
-policy.
+policy. Chapter 26 passed hardware validation on 2026-09-09 and records the
+minimal RogueOS Plymouth theme while retaining a Plymouth-free textual
+fallback and verified manual LUKS recovery.
 
 Only chapters that already exist are linked.
 
@@ -57,6 +59,7 @@ Only chapters that already exist are linked.
 | [23. Core desktop component refinement](23-core-desktop-component-refinement.md) | Niri, Kitty, and TTY | Refine Kitty, Mako, Fuzzel, and swaylock; preserve one owner per role; and validate explicit monitor restoration after system resume. |
 | [24. Tuigreet visual refinement](24-tuigreet-visual-refinement.md) | TTY and Niri | Apply the compact RogueOS login presentation, preserve privacy and PAM boundaries, validate the Matrix background and keyring sequence, and retain staged TTY rollback. |
 | [25. Terminal shell and editor refinement](25-terminal-shell-and-editor-refinement.md) | Niri and Kitty | Deploy the separate Bash, Nano, Micro, and Vim packages; add official Nano syntax definitions and project KDL support; preserve Kitty hooks and Wayland clipboard integration; and validate the complete terminal workflow. |
+| [26. Plymouth visual refinement](26-plymouth-visual-refinement.md) | Kitty, boot menu, and TTY | Install the minimal RogueOS theme descriptor, reuse Arch's packaged watermark and encrypted-root controls, rebuild and sign both UKIs, and validate graphical normal plus textual fallback boots. |
 
 ## Why Niri is not the first command
 

@@ -24,8 +24,8 @@ reviewed sequence, including later consolidations, is:
 4. swaybg and static wallpaper presentation — accepted without automation;
 5. tuigreet — completed in chapter 24;
 6. Bash, Nano, Micro, and Vim — completed in chapter 25;
-7. GTK and Qt cross-application consistency;
-8. optional Plymouth restyling;
+7. minimal RogueOS Plymouth refinement — completed in chapter 26;
+8. GTK and Qt cross-application consistency;
 9. complete visual validation and a stable dotfiles release.
 
 Only after that sequence is attractive and hardware-validated will the project

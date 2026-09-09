@@ -345,6 +345,6 @@ their defaults when these user links are absent.
 
 ## Next step
 
-Complete the cross-application GTK and Qt consistency review, then decide
-whether Plymouth's existing graphical boot needs a restrained RogueOS theme.
-Keep the textual fallback UKI independent throughout that evaluation.
+Apply chapter 26's restrained RogueOS Plymouth refinement while keeping the
+textual fallback UKI independent. Complete the cross-application GTK and Qt
+consistency review afterward.

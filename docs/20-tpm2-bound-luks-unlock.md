@@ -13,7 +13,7 @@ The completed credential model is:
 | --- | --- | --- |
 | Normal UKI TPM path | This TPM2, raw PCR 7, a valid signed PCR 11 policy, and the TPM PIN | Routine boot |
 | Normal UKI manual fallback | Existing strong LUKS passphrase | TPM or policy refusal |
-| Textual fallback UKI | Existing strong LUKS passphrase or generated recovery key | Independent boot recovery |
+| Textual fallback UKI | Enrolled TPM2 token when auto-discovered, or an existing manual credential | Plymouth-independent boot recovery |
 | Arch installation ISO | Existing strong LUKS passphrase or generated recovery key | Repair when neither UKI reaches a usable prompt |
 
 TPM enrollment adds one LUKS keyslot and one `systemd-tpm2` token. It does not
@@ -40,7 +40,8 @@ Before applying it:
 
 - chapters 00 through 19 are complete and chapter 19 is hardware-validated;
 - the normal Plymouth UKI and textual fallback UKI both cold-boot correctly;
-- the fallback accepts the strong LUKS passphrase without Plymouth;
+- the fallback accepts a discovered TPM2 token or a strong manual LUKS
+  credential without Plymouth;
 - Secure Boot is enabled and every executed boot artifact verifies;
 - the verified Arch installation USB and chapter 12 chroot procedure remain
   available;
@@ -873,11 +874,12 @@ machine's security design.
 Reboot and manually select `arch-linux-fallback.efi`. It must:
 
 - show the textual early-boot path without Plymouth;
-- request a full LUKS credential rather than the TPM PIN;
-- accept the existing strong passphrase;
+- accept the automatically discovered TPM2 token or an existing strong manual
+  LUKS credential;
 - omit `tpm2-device=auto`, `quiet`, and `splash` from the running command line;
 - reach the installed system with the broader initramfs;
-- leave the TPM token present but unused by this boot path.
+- remain independent of Plymouth even if systemd discovers the TPM token from
+  the LUKS2 header.
 
 After login:
 
@@ -892,7 +894,11 @@ sudo sbctl verify
 systemctl --failed --no-pager
 ```
 
-The `grep` command must print nothing. Use the strong passphrase for the test.
+The `grep` command must print nothing. Current systemd may still discover an
+enrolled `systemd-tpm2` token directly from LUKS2 metadata even though the
+fallback command line omits `tpm2-device=auto`; therefore a textual TPM PIN
+request is valid and does not make the fallback depend on Plymouth. Use the
+strong passphrase for the explicit `--test-passphrase` check.
 Schedule a separate private fallback boot using the generated recovery key;
 do not perform it while screen recording or in public.
 
@@ -1030,7 +1036,7 @@ before considering reenrollment.
 | TPM stopped working after an ordinary UKI update | Missing/invalid `.pcrsig` or wrong PCR-policy key | Passphrase boot, repair the UKI build, and keep the token unchanged |
 | TPM stopped working after Secure Boot policy change | Raw PCR 7 changed | Verify the intended trust change, then perform controlled reenrollment |
 | Repeated PIN attempts caused a delay | TPM dictionary-attack lockout | Use passphrase; wait and inspect deliberately; never clear TPM as first aid |
-| Normal fails but fallback accepts passphrase | TPM, signed policy, Plymouth, or normal-only command line | Stay on trusted fallback and compare artifacts |
+| Normal fails but fallback unlocks | Plymouth, host-pruned initramfs, quiet presentation, or a normal-only input | Stay on trusted fallback and compare artifacts; its token may have been auto-discovered |
 | Both UKIs reject a known passphrase | Keyboard, wrong device, header, or credential problem | Stop retries and use ISO read-only inspection |
 
 Useful evidence after a passphrase recovery boot is:
@@ -1237,12 +1243,14 @@ header merely to remove a functioning token.
 - [ ] Both UKIs contain valid `.pcrsig` and `.pcrpkey` sections for SHA-256 PCR 11.
 - [ ] The runtime PCR public key matches the configured public key.
 - [ ] Only the normal command line requests `discard,tpm2-device=auto`.
-- [ ] Fallback remains textual and omits TPM, `quiet`, and `splash`.
+- [ ] Fallback remains textual and omits the explicit TPM option, `quiet`, and
+      `splash`; automatic token discovery is documented.
 - [ ] Exactly one TPM2 token requires a unique PIN and binds raw PCR 7 plus signed PCR 11.
 - [ ] Password and recovery slots were never wiped.
 - [ ] A distinct after-enrollment LUKS2 header backup exists on encrypted external storage.
 - [ ] Normal cold boot unlocks with the TPM PIN and reaches the healthy workstation.
-- [ ] Textual fallback unlocks with the strong LUKS passphrase without using TPM.
+- [ ] Textual fallback unlocks, and the strong LUKS passphrase succeeds in a
+      separate `--test-passphrase` check even if fallback auto-discovers TPM2.
 - [ ] A temporary `fsck.mode=auto` marker changes the normal UKI measurement,
       unlocks through the same token without reenrollment, and is then removed.
 - [ ] Both UKIs and every executed bootloader artifact verify under sbctl.
