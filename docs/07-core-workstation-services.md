@@ -11,6 +11,7 @@ This chapter makes the following changes:
 - installs `pavucontrol` for PipeWire routing and device-profile selection;
 - installs BlueZ, its current command-line tools, and Blueman;
 - enables the system Bluetooth service;
+- leaves the Bluetooth adapter powered off after boot until the user enables it;
 - installs UDisks, udiskie, GVfs, and the MTP backend;
 - deploys one XDG autostart file from `niri-dotfiles` for udiskie;
 - installs GNOME Keyring and libsecret;
@@ -44,9 +45,10 @@ with the Arch installation USB or with the only copy of important data.
 | Audio server | PipeWire from chapter 05 |
 | Audio policy | WirePlumber from chapter 05 |
 | Audio controls | `wpctl` and `pavucontrol` |
-| Bluetooth stack | BlueZ with `bluetoothctl` |
+| Bluetooth stack | Enabled BlueZ service with `bluetoothctl` |
 | Bluetooth GUI | Blueman |
 | Bluetooth audio | PipeWire; no PulseAudio server or Bluetooth add-on |
+| Bluetooth startup policy | Daemon available; adapter not powered automatically |
 | Removable-media service | D-Bus-activated UDisks 2 |
 | Automatic mounting | udiskie in the graphical user session |
 | GTK file access | GVfs with MTP support for Android devices |
@@ -209,8 +211,9 @@ bluetoothctl show
 ```
 
 The service must be enabled and active, and `bluetoothctl show` must display a
-controller. Current BlueZ powers adapters on by default when its service starts
-or the machine resumes.
+controller. This first check deliberately uses BlueZ's default adapter policy;
+the final subsection below changes only the automatic power state after the
+controller and its manual controls have been validated.
 
 If `rfkill list bluetooth` reports only a soft block, remove that specific
 block and check again:
@@ -250,6 +253,101 @@ nmcli radio wifi
 The expected adapter state is now `Powered: yes`. Use these commands instead
 of stopping BlueZ, unloading a kernel module, changing UEFI settings, or
 running `rfkill ... all` merely to save battery.
+
+### Keep the adapter off after boot
+
+The validated daily policy keeps `bluetooth.service` enabled but does not power
+the controller automatically. This distinction matters:
+
+- `bluetoothd` remains available to Blueman, Waybar, PipeWire, and
+  `bluetoothctl`;
+- the adapter does not transmit or scan merely because the machine booted;
+- the user can enable and disable it from Blueman without changing the system
+  service or the Wi-Fi radio.
+
+Inspect the packaged default before changing it:
+
+```bash
+grep -nE '^\[Policy\]|^#?AutoEnable=' /etc/bluetooth/main.conf
+```
+
+Preserve the original administrator-visible file once:
+
+```bash
+sudo cp -a /etc/bluetooth/main.conf \
+    /etc/bluetooth/main.conf.pre-autoenable
+```
+
+Edit the file through the privileged-editor path:
+
+```bash
+SUDO_EDITOR=micro sudoedit /etc/bluetooth/main.conf
+```
+
+In its existing `[Policy]` section, set:
+
+```ini
+AutoEnable=false
+```
+
+Do not create a second `[Policy]` section. Confirm the effective source line:
+
+```bash
+grep -nE '^\[Policy\]|^AutoEnable=' /etc/bluetooth/main.conf
+```
+
+BlueZ defines `AutoEnable` as the policy for enabling controllers when they
+are found, including controllers present at daemon startup and those connected
+later. It does not disable `bluetooth.service`, stop `bluetoothd`, disable
+Blueman autostart, or change Wi-Fi.
+
+Power the controller down deliberately, then reboot so the boot-time result is
+tested rather than inferred:
+
+```bash
+bluetoothctl power off
+systemctl reboot
+```
+
+Before opening Blueman after the reboot, inspect both layers:
+
+```bash
+systemctl is-enabled bluetooth.service
+systemctl is-active bluetooth.service
+rfkill list bluetooth
+bluetoothctl show
+```
+
+The service must remain `enabled` and `active`, while the controller is either
+reported with `Powered: no` or temporarily unavailable behind a specific
+Bluetooth soft block. The latter is not a service failure. Open
+`blueman-manager`, enable Bluetooth, and verify:
+
+```bash
+rfkill list bluetooth
+bluetoothctl show | grep -E \
+    'Controller|Name:|Alias:|Powered:|Discoverable:|Pairable:'
+systemctl is-active bluetooth.service
+```
+
+The controller must now be unblocked and report `Powered: yes`; the service
+must still be active. Disable Bluetooth from Blueman and confirm that it returns
+to `Powered: no` without stopping BlueZ or disabling Wi-Fi.
+
+The first target passed this cold-boot, manual-on, and manual-off sequence on
+2026-09-08 with BlueZ 5.87. At boot the adapter was soft-blocked and not
+available to `bluetoothctl`; after Blueman enabled it, the controller appeared
+as powered and pairable; after Blueman disabled it, the controller remained
+enumerated with `Powered: no` and `PowerState: off`.
+
+To return to BlueZ's packaged automatic-enable policy, restore the reviewed
+backup and reboot:
+
+```bash
+sudo cp -a /etc/bluetooth/main.conf.pre-autoenable \
+    /etc/bluetooth/main.conf
+systemctl reboot
+```
 
 Open the canonical graphical manager from Niri:
 
@@ -621,7 +719,10 @@ available through `udisksctl`.
 - [ ] PipeWire, PipeWire-Pulse, and WirePlumber remain active.
 - [ ] `pavucontrol` sees the built-in output and input profiles.
 - [ ] Both speakers and a short microphone recording work.
-- [ ] BlueZ is enabled and `bluetoothctl show` sees the T14 controller.
+- [ ] BlueZ is enabled and active while `AutoEnable=false` leaves the adapter
+      unpowered after a cold boot.
+- [ ] Blueman can expose and power the T14 controller, then return it to
+      `Powered: no` without stopping BlueZ or changing Wi-Fi.
 - [ ] No deprecated BlueZ or overlapping PulseAudio package is installed.
 - [ ] Blueman opens and can pair a deliberately selected device.
 - [ ] UDisks remains D-Bus activated rather than manually enabled.
@@ -643,6 +744,7 @@ available through `udisksctl`.
 - [ArchWiki: WirePlumber](https://wiki.archlinux.org/title/WirePlumber)
 - [ArchWiki: Bluetooth](https://wiki.archlinux.org/title/Bluetooth)
 - [ArchWiki: Blueman](https://wiki.archlinux.org/title/Blueman)
+- [BlueZ reference `main.conf`](https://github.com/bluez/bluez/blob/master/src/main.conf)
 - [ArchWiki: Udisks](https://wiki.archlinux.org/title/Udisks)
 - [ArchWiki: File manager functionality](https://wiki.archlinux.org/title/File_manager_functionality)
 - [ArchWiki: GNOME Keyring](https://wiki.archlinux.org/title/GNOME/Keyring)

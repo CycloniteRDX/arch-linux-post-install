@@ -24,7 +24,9 @@ This chapter:
 It does not customize Bash, Kitty, Micro, or Vim; install a clipboard-history
 daemon; select default graphical applications; install icon fonts; or replace
 standard commands with aliases. Those choices belong to later dotfiles,
-desktop-component, application, or handbook work.
+desktop-component, application, or handbook work. Chapter 25 later adds the
+reviewed Bash, Nano, Micro, and Vim user configurations without changing this
+chapter's package and session boundary.
 
 ## Prerequisites
 
@@ -317,7 +319,8 @@ its retention and exclusion policy.
 
 Installing `wl-clipboard` gives Micro its supported Wayland copy-and-paste
 backend. It does not change Vim's compiled features or configure Vim
-registers; the Vim and clipboard-provider guide belongs in the handbook.
+registers by itself; chapter 25 later supplies the reviewed Vim clipboard
+provider through the separate user-level dotfiles package.
 
 ## Use archive tools conservatively
 

@@ -22,6 +22,10 @@ Chapter 23 passed hardware validation on 2026-09-08 and records the coordinated
 Kitty, Mako, Fuzzel, swaylock, and system-resume monitor-restoration refinement.
 Chapter 24 passed hardware validation on 2026-09-08 and records the final
 tuigreet presentation without changing greetd, PAM, Niri, or TTY recovery.
+Chapter 25 passed terminal and visual validation on 2026-09-08 and records the
+separate Bash, Nano, Micro, and Vim Stow packages. The chapter 07 Bluetooth
+procedure now also ends with the validated enabled-daemon, adapter-off-at-boot
+policy.
 
 Only chapters that already exist are linked.
 
@@ -52,6 +56,7 @@ Only chapters that already exist are linked.
 | [22. Niri daily-driver refinement](22-niri-daily-driver-refinement.md) | Niri, Kitty, and TTY | Deploy the first target's finished Niri v1 input, layout, and binding policy; install its explicit runtime dependencies; and couple only the internal-panel refresh rate to TLP's D-Bus profile. |
 | [23. Core desktop component refinement](23-core-desktop-component-refinement.md) | Niri, Kitty, and TTY | Refine Kitty, Mako, Fuzzel, and swaylock; preserve one owner per role; and validate explicit monitor restoration after system resume. |
 | [24. Tuigreet visual refinement](24-tuigreet-visual-refinement.md) | TTY and Niri | Apply the compact RogueOS login presentation, preserve privacy and PAM boundaries, validate the Matrix background and keyring sequence, and retain staged TTY rollback. |
+| [25. Terminal shell and editor refinement](25-terminal-shell-and-editor-refinement.md) | Niri and Kitty | Deploy the separate Bash, Nano, Micro, and Vim packages; add official Nano syntax definitions and project KDL support; preserve Kitty hooks and Wayland clipboard integration; and validate the complete terminal workflow. |
 
 ## Why Niri is not the first command
 
@@ -69,15 +74,15 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | --- | --- |
 | System administration and package management | Chapters 01, 02, and 16 |
 | Booting and system maintenance | Chapters 01, 02, 03, 12, 19, and 20 |
-| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, 22, 23, and 24 |
+| Graphical user interface | Chapters 05, 10, 11, 13, 15, 17, 18, 19, 21, 22, 23, 24, and 25 |
 | Power management and laptops | Chapters 06, 11, 18, 22, and 23 |
 | Multimedia | Chapter 07 |
 | Networking and firewall | Chapter 04 |
 | Input devices | Chapters 06 and 22 |
 | Optimization and solid-state drives | Chapters 03 and 06 |
 | System services | Chapters 02, 04, and 07 |
-| Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, 23, and 24 |
-| Console improvements | Chapters 02 and 08 |
+| Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, 23, 24, and 25 |
+| Console improvements | Chapters 02, 08, and 25 |
 | Applications | Chapter 09 |
 
 Topics such as mail servers, public network shares, development toolchains,

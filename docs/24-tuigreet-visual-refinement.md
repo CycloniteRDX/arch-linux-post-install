@@ -323,7 +323,7 @@ validation on the first target on 2026-09-08.
 
 ## Next step
 
-Validate GTK and Qt consistency across representative applications. After that
-shared toolkit layer is closed, personalize Micro, Nano, and Vim as separate
-terminal-editor packages before restyling Plymouth and running the complete
-desktop validation.
+Deploy and validate the separate Bash, Nano, Micro, and Vim packages in chapter
+25. After that terminal workflow is recorded, complete the GTK and Qt
+consistency review before deciding whether to restyle Plymouth and running the
+complete desktop validation.

@@ -334,6 +334,7 @@ and suspend/resume validation on the first target on 2026-09-08.
 The existing swaybg wallpaper presentation was subsequently accepted as the
 finished static policy: one renderer, one selected wallpaper, one fallback
 colour, and no rotation or automation scripts. Chapter 24 records the
-completed tuigreet refinement. The next open surface is the cross-application
-GTK and Qt consistency review, followed by separate Micro, Nano, and Vim
-personalization and then Plymouth styling.
+completed tuigreet refinement. The terminal workflow is completed in chapter
+25 with separate Bash, Nano, Micro, and Vim packages. The next open surface is
+the cross-application GTK and Qt consistency review, followed by the decision
+on whether Plymouth needs further styling.

@@ -32,7 +32,13 @@ event-driven refresh-rate integration with TLP, hardware-validated on
 and system-resume monitor-restoration refinement, hardware-validated on
 2026-09-08. Chapter 24 records the compact RogueOS tuigreet presentation and
 its unchanged greetd, PAM, keyring, Niri, and TTY recovery boundaries,
-hardware-validated on 2026-09-08. The second ThinkPad and recurring
+hardware-validated on 2026-09-08. Chapter 25 deploys the separate Bash, Nano,
+Micro, and Vim packages already committed in `niri-dotfiles`, including Arch's
+Nano syntax collection, project-owned KDL highlighting, and Wayland clipboard
+integration; the complete set passed terminal and visual validation on
+2026-09-08. The established chapter 07 Bluetooth service now also records the
+validated final policy: BlueZ remains enabled while the controller starts
+unpowered until the user enables it. The second ThinkPad and recurring
 external-display layouts still require their own measured output policy.
 
 ## Starting point

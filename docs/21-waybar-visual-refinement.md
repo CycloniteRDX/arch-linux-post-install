@@ -23,9 +23,9 @@ reviewed sequence, including later consolidations, is:
    chapter 23;
 4. swaybg and static wallpaper presentation — accepted without automation;
 5. tuigreet — completed in chapter 24;
-6. GTK and Qt cross-application consistency;
-7. Micro, Nano, and Vim;
-8. Plymouth;
+6. Bash, Nano, Micro, and Vim — completed in chapter 25;
+7. GTK and Qt cross-application consistency;
+8. optional Plymouth restyling;
 9. complete visual validation and a stable dotfiles release.
 
 Only after that sequence is attractive and hardware-validated will the project
@@ -703,8 +703,7 @@ to repair a Waybar presentation problem.
 ## Next step
 
 Continue with chapter 22, which records the Niri work that was deliberately
-moved forward and validated alongside the final Waybar input refinements.
-After publishing `post-install-22-v1`, personalize Fuzzel using the same
-Midnight Circuit geometry and state hierarchy. Keep Waybar and Niri selected
-while that next component is evaluated so visual differences can be attributed
-to one change at a time.
+moved forward and validated alongside the final Waybar input refinements. The
+subsequent component, tuigreet, and terminal-workflow stages are now recorded
+through chapter 25. GTK and Qt consistency is the next open review; optional
+Plymouth restyling follows only if it offers a concrete improvement.

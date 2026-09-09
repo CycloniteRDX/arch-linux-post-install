@@ -360,14 +360,27 @@ LED is not equivalent to a muted microphone; verify actual PipeWire state.
 
 ## Phase 9 — Bluetooth and removable media
 
+After a cold boot and before enabling Bluetooth in Blueman, distinguish daemon
+availability from controller power:
+
 ```bash
-systemctl status bluetooth.service --no-pager
+systemctl is-enabled bluetooth.service
+systemctl is-active bluetooth.service
+rfkill list bluetooth
 bluetoothctl show
 ```
 
-Pair or reconnect one real device, use it briefly, disconnect it, and reconnect
-after suspend. If it is an audio device, confirm WirePlumber selects sensible
-profiles and the built-in audio returns after disconnection.
+The final chapter 07 policy expects an enabled and active BlueZ service while
+the controller starts unpowered. Depending on the platform's rfkill state,
+`bluetoothctl show` may report `Powered: no` or no default controller before
+the first manual enable; neither result means that `bluetooth.service` failed.
+
+Enable Bluetooth through Blueman and confirm that the specific Bluetooth radio
+is unblocked and reports `Powered: yes`. Pair or reconnect one real device, use
+it briefly, disconnect it, and reconnect after suspend. If it is an audio
+device, confirm WirePlumber selects sensible profiles and the built-in audio
+returns after disconnection. Disable the adapter again and confirm
+`Powered: no` without stopping BlueZ or changing Wi-Fi.
 
 Insert a non-critical USB storage device and verify:
 
@@ -409,8 +422,9 @@ Open representative files from Nautilus and from Kitty with `xdg-open`:
 - `.ics` file in GNOME Calendar;
 - Writer, Calc and Impress documents in LibreOffice Still.
 
-Confirm Micro, Vim, Git and GitHub CLI start, while remembering that their full
-development configuration remains handbook work.
+Confirm Nano, Micro, Vim, Bash, Git, and GitHub CLI start. After chapter 25,
+also verify the tracked prompt, KDL syntax definitions, RogueOS editor palette,
+Vim state directories, and Wayland clipboard paths.
 
 Test one application that stores a disposable secret through GNOME Keyring,
 log out and back in, confirm retrieval, then delete the test secret through the
