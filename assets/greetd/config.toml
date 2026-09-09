@@ -1,0 +1,9 @@
+[terminal]
+# Run the greeter on the first virtual terminal.
+vt = 1
+
+[default_session]
+# Keep session memory but never remember the username.
+command = "tuigreet --time --time-format '%d/%m/%Y  %H:%M' --remember-session --greeting 'Authorized personnel only' --custom-title 'RogueOS' --width 52 --window-padding 2 --container-padding 2 --prompt-padding 1 --greet-align center --theme 'border=cyan;text=white;time=cyan;container=black;title=magenta;greet=cyan;prompt=magenta;input=white;action=cyan;button=magenta' --background matrix --matrix-length 4,12 --matrix-speed 0.10,0.45 --matrix-colors '#FFFFFF,#5CE1E6,#2A3A50' --cmd niri-session"
+
+user = "greeter"

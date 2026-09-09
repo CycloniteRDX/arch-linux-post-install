@@ -32,6 +32,10 @@ Chapter 27 passed hardware validation on 2026-09-09 and closes the first
 complete desktop pass: GTK/Qt consistency, Papirus notification icons,
 on-demand Bluetooth, clean Stow ownership, suspend/logout recovery, and normal
 plus fallback boot paths are validated together.
+Chapter 28 is the final reconstruction recipe for later clean installations.
+It composes the validated work without replacing its explanatory or recovery
+chapters. Its checkpoint will be `post-install-28-v1` after a clean-install
+test; the dotfiles input remains immutable `v1.0.0`.
 
 Only chapters that already exist are linked.
 
@@ -65,6 +69,7 @@ Only chapters that already exist are linked.
 | [25. Terminal shell and editor refinement](25-terminal-shell-and-editor-refinement.md) | Niri and Kitty | Deploy the separate Bash, Nano, Micro, and Vim packages; add official Nano syntax definitions and project KDL support; preserve Kitty hooks and Wayland clipboard integration; and validate the complete terminal workflow. |
 | [26. Plymouth visual refinement](26-plymouth-visual-refinement.md) | Kitty, boot menu, and TTY | Install the minimal RogueOS theme descriptor, reuse Arch's packaged watermark and encrypted-root controls, rebuild and sign both UKIs, and validate graphical normal plus textual fallback boots. |
 | [27. Global desktop validation](27-global-desktop-validation.md) | Niri, Kitty, boot menu, and TTY | Close the GTK/Qt review, correct Mako icon lookup, make Bluetooth on-demand, verify the complete desktop and recovery lifecycle, and prepare the stable dotfiles release. |
+| [28. Complete workstation reconstruction](28-complete-workstation-reconstruction.md) | TTY, Niri, boot menu, and recovery media | Rebuild the validated workstation from the runbook handoff with one package manifest, reviewed system templates, frozen dotfiles, and explicit recovery boundaries. |
 
 ## Why Niri is not the first command
 
@@ -92,6 +97,7 @@ also ensuring that a graphical failure cannot block maintenance or recovery.
 | Appearance | Chapters 08, 10, 15, 17, 19, 21, 22, 23, 24, 25, 26, and 27 |
 | Console improvements | Chapters 02, 08, and 25 |
 | Applications | Chapter 09 |
+| Cross-area clean reconstruction | Chapter 28 |
 
 Topics such as mail servers, public network shares, development toolchains,
 virtualization, containers, and gaming remain optional extensions unless they

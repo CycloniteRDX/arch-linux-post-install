@@ -48,7 +48,11 @@ Papirus family, replaces the permanent Blueman applet with an rfkill-aware
 Waybar toggle and on-demand manager, and repeats the critical desktop,
 suspend, logout, keyring, service, normal-boot, and recovery checks. The final
 combined state passed hardware validation on the first ThinkPad on 2026-09-09
-and is ready for the matching dotfiles `v1.0.0` release.
+and is published as dotfiles `v1.0.0` and the matching
+`post-install-27-v1` checkpoint. Chapter 28 adds the concise reconstruction
+path: one audited official-package manifest, project-owned system templates,
+the frozen dotfiles deployment, and bounded handoffs to the detailed recovery
+and TPM2 procedures.
 The second ThinkPad and recurring
 external-display layouts still require their own measured output policy.
 

@@ -1,0 +1,10 @@
+ALL_kver="/boot/vmlinuz-linux"
+
+PRESETS=('default' 'fallback')
+
+default_uki="/boot/EFI/Linux/arch-linux.efi"
+default_cmdline="/etc/kernel/cmdline"
+
+fallback_uki="/boot/EFI/Linux/arch-linux-fallback.efi"
+fallback_cmdline="/etc/kernel/cmdline-fallback"
+fallback_options="-S autodetect,plymouth"
